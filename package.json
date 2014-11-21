@@ -1,0 +1,19 @@
+{
+  "name": "kzt-twitter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nikita Bayev",
+  "license": "MIT",
+  "dependencies": {
+    "cron": "^1.0.5",
+    "feed-read": "0.0.1",
+    "feedparser": "^0.19.2",
+    "request": "^2.48.0",
+    "time": "^0.11.0",
+    "twit": "^1.1.18"
+  }
+}
