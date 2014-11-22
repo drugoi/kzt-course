@@ -57,24 +57,19 @@ feedparser.on('readable', function() {
 	return tweet;
 });
 var sendTweet = function() {
-		T.post('statuses/update', {
-			status: tweet
-		}, function(err, data, response) {
-// 			if err throw err;
-			console.log(data.text);
-		})
-	}
-setTimeout(sendTweet, 3000);
-/*
+	T.post('statuses/update', {
+		status: tweet
+	}, function(err, data, response) {
+		if (err) throw err;
+		console.log(data.text);
+	});
+};
 var job = new CronJob({
-  cronTime: '00 30 11 * * 1-5',
-  onTick: function() {
-    // Runs every weekday (Monday through Friday)
-    // at 11:30:00 AM. It does not run on Saturday
-    // or Sunday.
-  },
-  start: false,
-  timeZone: 'America/Los_Angeles'
+	cronTime: '00 10 * * *',
+	onTick: function() {
+		setTimeout(sendTweet, 3000);
+	},
+	start: true,
+	timeZone: 'Asia/Almaty'
 });
 job.start();
-*/
