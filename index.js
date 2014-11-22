@@ -2,25 +2,16 @@ var FeedParser = require('feedparser');
 var request = require('request');
 var Twit = require('twit');
 var CronJob = require('cron').CronJob;
-
 var tweets = require('./tweets.json');
-var twiKeys = require('./keys.json');
-
-
+var tweet;
 var T = new Twit({
-	consumer_key: 'H6rctdC38OjloGgVhuF19VeNC',
-	consumer_secret: 'EfbJLuDBFVFGJifZrX0s1EphriWheIsWuv8FnumtuG6wzi096F',
-	access_token: '2905695612-mWGkwNWk65i9ywtbARH6Gx8SokdDS0xqYIdTBlK',
-	access_token_secret: 'F8JtEK8rEvCou7AEf1j3fW91uRqb9YnFpL6SO4wBVIF9q'
+	consumer_key: 'y4Qcy1wA0IyS3rMF1vy9enJ2l',
+	consumer_secret: 'pOzfY22xKlzxrWjvLo8vPe4Uj9DsP4OQWlpJZZD0g6O5C0o04D',
+	access_token: '2905695612-fUM7koS3ccAAV4YBDJHzTO0sD70mR0RBGAmZuS8',
+	access_token_secret: 'ogc3HfLZumYa8v5omcAM3QnWzKnc2NA1TgRCW48GzvoIa'
 });
-
-
 var req = request('http://www.nationalbank.kz/rss/rates_all.xml');
 var feedparser = new FeedParser();
-var tweet = tweets.text1;
-// var textsUSD = '{summary_usd}';
-// var textsEUR = '{summary_eur}';
-
 req.on('error', function(error) {
 	console.error(error);
 });
@@ -36,20 +27,44 @@ feedparser.on('readable', function() {
 	var stream = this;
 	var meta = this.meta;
 	var item;
-	var article;
 	while (item = stream.read()) {
 		if (item.title === 'USD') {
-			tweet = tweet.replace('{summary_usd}', item.summary);
+			switch (item.index) {
+			case 'DOWN':
+				tweet = tweet.downUSD.replace(tweets.textsUSD, item.summary).replace(tweets.textsChange, item.change);
+				break;
+			case 'UP':
+				tweet = tweet.upUSD.replace(tweets.textsUSD, item.summary).replace(tweets.textsChange, item.change);
+				break;
+			default:
+				tweet = tweets.stable.replace(tweets.textsUSD, item.summary);
+				break;
+			}
 		} else if (item.title === 'EUR') {
-			tweet = tweet.replace('{summary_eur}', item.summary);
+			switch (item.index) {
+			case 'DOWN':
+				tweet = tweet.downEUR.replace(tweets.textsEUR, item.summary).replace(tweets.textsChange, item.change);
+				break;
+			case 'UP':
+				tweet = tweet.upEUR.replace(tweets.textsEUR, item.summary).replace(tweets.textsChange, item.change);
+				break;
+			default:
+				tweet = tweet.replace(tweets.textsEUR, item.summary);
+				break;
+			}
 		}
 	}
 	return tweet;
 });
-T.post('statuses/update', { status: tweet }, function(err, data, response) {
-  console.log(data);
-})
-
+var sendTweet = function() {
+		T.post('statuses/update', {
+			status: tweet
+		}, function(err, data, response) {
+// 			if err throw err;
+			console.log(data.text);
+		})
+	}
+setTimeout(sendTweet, 3000);
 /*
 var job = new CronJob({
   cronTime: '00 30 11 * * 1-5',

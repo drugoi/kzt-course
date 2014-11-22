@@ -1,3 +1,10 @@
 {
-	"text1": "Сегодня моя цена {summary_usd} за Доллар США и {summary_eur} за Евро."
+	"textsUSD": "{summary_usd}",
+	"textsEUR": "{summary_eur}",
+	"textsChange": "{summary_change}",
+	"stable": "Сегодня моя цена {summary_usd} за Доллар США и {summary_eur} за Евро.",
+	"downEUR": "Сегодня в Евро я упал на {summary_change} ({summary_eur}), а цена 1 KZT за Доллар США — {summary_usd}.",
+	"downUSD": "Сегодня в Долларах США я упал на {summary_change} ({summary_usd}), а цена 1 KZT за Евро — {summary_eur}.",
+	"upEUR": "Сегодня в Евро я поднялся на {summary_change} ({summary_eur}), а цена 1 KZT за Доллар США — {summary_usd}.",
+	"upUSD": "Сегодня в Долларах США я поднялся на {summary_change} ({summary_usd}), а цена 1 KZT за Евро — {summary_eur}."
 }
