@@ -1,4 +1,4 @@
-require('newrelic');
+//require('newrelic');
 
 var express = require('express')
 var app = express();
@@ -7,7 +7,10 @@ var FeedParser = require('feedparser');
 var request = require('request');
 var Twit = require('twit');
 var CronJob = require('cron').CronJob;
-var tweets = require('./tweets.json');
+var tweetsRUS = require('./tweets_rus.json');
+var tweetsKAZ = require('./tweets_kaz.json');
+var tweetRUS;
+var tweetKAZ;
 var tweet;
 var T = new Twit({
 	consumer_key: 'y4Qcy1wA0IyS3rMF1vy9enJ2l',
@@ -35,42 +38,69 @@ var getCourses = function() {
 		var item;
 		while (item = stream.read()) {
 			if (item.title === 'USD') {
+				var summary = item.summary.replace('.', ',');
 				switch (item.index) {
 				case 'DOWN':
-					tweet = tweet.downUSD.replace(tweets.textsUSD, item.summary).replace(tweets.textsChange, item.change);
+					tweetKAZ = tweetKAZ.downUSD.replace(tweetsKAZ.textsUSD, summary).replace(tweetsKAZ.textsChange, item.change);
+					tweetRUS = tweetRUS.downUSD.replace(tweetsRUS.textsUSD, summary).replace(tweetsRUS.textsChange, item.change);
 					break;
 				case 'UP':
-					tweet = tweet.upUSD.replace(tweets.textsUSD, item.summary).replace(tweets.textsChange, item.change);
+					tweetKAZ = tweetKAZ.upUSD.replace(tweetsKAZ.textsUSD, summary).replace(tweetsKAZ.textsChange, item.change);
+					tweetRUS = tweetRUS.upUSD.replace(tweetsRUS.textsUSD, summary).replace(tweetsRUS.textsChange, item.change);
 					break;
 				default:
-					tweet = tweets.stable.replace(tweets.textsUSD, item.summary);
+					tweetKAZ = tweetsKAZ.stable.replace(tweetsKAZ.textsUSD, summary);
+					tweetRUS = tweetsRUS.stable.replace(tweetsRUS.textsUSD, summary);
 					break;
 				}
 			} else if (item.title === 'EUR') {
+				var summary = item.summary.replace('.', ',');
 				switch (item.index) {
 				case 'DOWN':
-					tweet = tweet.downEUR.replace(tweets.textsEUR, item.summary).replace(tweets.textsChange, item.change);
+					tweetKAZ = tweetKAZ.downEUR.replace(tweetsKAZ.textsEUR, summary).replace(tweetsKAZ.textsChange, item.change);
+					tweetRUS = tweetRUS.downEUR.replace(tweetsRUS.textsEUR, summary).replace(tweetsRUS.textsChange, item.change);
 					break;
 				case 'UP':
-					tweet = tweet.upEUR.replace(tweets.textsEUR, item.summary).replace(tweets.textsChange, item.change);
+					tweetKAZ = tweetKAZ.upEUR.replace(tweetsKAZ.textsEUR, summary).replace(tweetsKAZ.textsChange, item.change);
+					tweetRUS = tweetRUS.upEUR.replace(tweetsRUS.textsEUR, summary).replace(tweetsRUS.textsChange, item.change);
 					break;
 				default:
-					tweet = tweet.replace(tweets.textsEUR, item.summary);
+					tweetKAZ = tweetKAZ.replace(tweetsKAZ.textsEUR, summary);
+					tweetRUS = tweetRUS.replace(tweetsRUS.textsEUR, summary);
 					break;
 				}
 			}
+		}
+		
+		tweet = {
+			rus: tweetRUS,
+			kaz: tweetKAZ
 		}
 		return tweet;
 	});
 	return tweet;
 }
-var sendTweet = function() {
-	T.post('statuses/update', {
-		status: tweet
-	}, function(err, data, response) {
-		if (err) throw err;
-		console.log(data.text);
-	});
+var sendTweet = {
+	rus: function() {
+		T.post('statuses/update', {
+			status: tweet.rus
+		}, function(err, data, response) {
+			if (err) throw err;
+			console.log(data.text);
+		});
+	},
+	kaz: function() {
+		T.post('statuses/update', {
+			status: tweet.kaz
+		}, function(err, data, response) {
+			if (err) throw err;
+			console.log(data.text);
+		});
+	},
+	all: function() {
+		sendTweet.rus();
+		sendTweet.kaz();
+	}
 };
 var job = new CronJob({
 	cronTime: '00 10 * * *',
