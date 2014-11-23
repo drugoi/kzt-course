@@ -68,7 +68,7 @@ var sendTweet = function() {
 	});
 };
 var job = new CronJob({
-	cronTime: '00 09 * * *',
+	cronTime: '00 10 * * *',
 	onTick: function() {
 		setTimeout(getCourses, 0);
 		setTimeout(sendTweet, 5000);
