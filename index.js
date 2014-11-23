@@ -38,7 +38,7 @@ var getCourses = function() {
 		var item;
 		while (item = stream.read()) {
 			if (item.title === 'USD') {
-				var summary = item.summary.replace('.', ',');
+				var summary = item.summary;
 				switch (item.index) {
 				case 'DOWN':
 					tweetKAZ = tweetKAZ.downUSD.replace(tweetsKAZ.textsUSD, summary).replace(tweetsKAZ.textsChange, item.change);
@@ -54,7 +54,7 @@ var getCourses = function() {
 					break;
 				}
 			} else if (item.title === 'EUR') {
-				var summary = item.summary.replace('.', ',');
+				var summary = item.summary;
 				switch (item.index) {
 				case 'DOWN':
 					tweetKAZ = tweetKAZ.downEUR.replace(tweetsKAZ.textsEUR, summary).replace(tweetsKAZ.textsChange, item.change);
