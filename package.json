@@ -1,15 +1,19 @@
 {
   "name": "kzt-twitter",
   "version": "1.0.0",
-  "description": "",
+  "description": "Simple Twitter bot for tweeting course of Kazakhstan Tenge",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "Nikita Bayev",
   "license": "MIT",
+  "engines": {
+    "node": "0.10.x"
+  },
   "dependencies": {
     "cron": "^1.0.5",
+    "express": "^4.10.2",
     "feed-read": "0.0.1",
     "feedparser": "^0.19.2",
     "request": "^2.48.0",
