@@ -1,4 +1,4 @@
-//require('newrelic');
+require('newrelic');
 
 var express = require('express')
 var app = express();
@@ -73,22 +73,14 @@ var getCourses = function() {
 		}
 		
 		tweet = {
-			rus: tweetRUS,
-			kaz: tweetKAZ
+			kaz: tweetKAZ,
+			rus: tweetRUS
 		}
 		return tweet;
 	});
 	return tweet;
 }
 var sendTweet = {
-	rus: function() {
-		T.post('statuses/update', {
-			status: tweet.rus
-		}, function(err, data, response) {
-			if (err) throw err;
-			console.log(data.text);
-		});
-	},
 	kaz: function() {
 		T.post('statuses/update', {
 			status: tweet.kaz
@@ -97,13 +89,21 @@ var sendTweet = {
 			console.log(data.text);
 		});
 	},
+	rus: function() {
+		T.post('statuses/update', {
+			status: tweet.rus
+		}, function(err, data, response) {
+			if (err) throw err;
+			console.log(data.text);
+		});
+	},
 	all: function() {
-		sendTweet.rus();
 		sendTweet.kaz();
+		sendTweet.rus();
 	}
 };
 var job = new CronJob({
-	cronTime: '10 10 * * *',
+	cronTime: '00 10 * * *',
 	onTick: function() {
 		setTimeout(getCourses, 0);
 		setTimeout(sendTweet.all, 5000);
