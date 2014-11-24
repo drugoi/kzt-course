@@ -103,10 +103,10 @@ var sendTweet = {
 	}
 };
 var job = new CronJob({
-	cronTime: '00 10 * * *',
+	cronTime: '10 10 * * *',
 	onTick: function() {
 		setTimeout(getCourses, 0);
-		setTimeout(sendTweet, 5000);
+		setTimeout(sendTweet.all, 5000);
 	},
 	start: true,
 	timeZone: 'Asia/Almaty'
