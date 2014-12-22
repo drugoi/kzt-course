@@ -1,8 +1,9 @@
 {
 	"textsUSD": "{summary_usd}",
 	"textsEUR": "{summary_eur}",
+	"textsRUB": "{summary_rub}",
 	"textsChange": "{summary_change}",
-	"stable": "Сегодня моя цена {summary_usd} за Доллар США и {summary_eur} за Евро. #стабильность",
+	"stable": "Сегодня моя цена {summary_usd} за Доллар США, {summary_eur} за Евро и {summary_rub} за Российский рубль. #стабильность",
 	"downEUR": "Сегодня в Евро я упал на {summary_change} ({summary_eur}), а цена 1 Доллара США — {summary_usd}. #стабильность",
 	"downUSD": "Сегодня в Долларах США я упал на {summary_change} ({summary_usd}), а цена 1 Евро — {summary_eur}. #стабильность",
 	"upEUR": "Сегодня в Евро я поднялся на {summary_change} ({summary_eur}), а цена 1 Доллара США — {summary_usd}. #стабильность",
