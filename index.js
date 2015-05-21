@@ -11,12 +11,8 @@ var tweetsRUS = require('./tweets_rus.json');
 var tweetsKAZ = require('./tweets_kaz.json');
 var tweetRUS, tweetKAZ;
 var tweet = {};
-var T = new Twit({
-  consumer_key: 'y4Qcy1wA0IyS3rMF1vy9enJ2l',
-  consumer_secret: 'pOzfY22xKlzxrWjvLo8vPe4Uj9DsP4OQWlpJZZD0g6O5C0o04D',
-  access_token: '2905695612-fUM7koS3ccAAV4YBDJHzTO0sD70mR0RBGAmZuS8',
-  access_token_secret: 'ogc3HfLZumYa8v5omcAM3QnWzKnc2NA1TgRCW48GzvoIa'
-});
+var keys = require('./keys.json');
+var T = new Twit(keys);
 var sendTweet = function(tweet) {
   T.post('statuses/update', {
     status: tweet
@@ -39,6 +35,10 @@ var getRSS = function() {
     _event.emit('received', feedparser);
   });
 };
+var buildTweet = function(tweetType, tweetCurrency, tweetSummary, tweetChange) {
+  tweetKAZ = tweetsKAZ[tweetType].replace(tweetsKAZ[tweetCurrency], tweetSummary).replace(tweetsKAZ.textsChange, tweetChange);
+  tweetRUS = tweetsRUS[tweetType].replace(tweetsRUS[tweetCurrency], tweetSummary).replace(tweetsRUS.textsChange, tweetChange);
+};
 _event.on('received', function(feedparser) {
   feedparser.on('error', function(error) {
     console.error(error);
@@ -47,18 +47,19 @@ _event.on('received', function(feedparser) {
     var stream = this;
     var item;
     var summary;
+    var currency;
     while (item = stream.read()) {
       switch (item.title) {
       case 'USD':
         summary = item.summary;
         switch (item.index) {
         case 'DOWN':
-          tweetKAZ = tweetKAZ.downUSD.replace(tweetsKAZ.textsUSD, summary).replace(tweetsKAZ.textsChange, item.change);
-          tweetRUS = tweetRUS.downUSD.replace(tweetsRUS.textsUSD, summary).replace(tweetsRUS.textsChange, item.change);
+          tweetKAZ = tweetsKAZ.downUSD.replace(tweetsKAZ.textsUSD, summary).replace(tweetsKAZ.textsChange, item.change);
+          tweetRUS = tweetsRUS.downUSD.replace(tweetsRUS.textsUSD, summary).replace(tweetsRUS.textsChange, item.change);
           break;
         case 'UP':
-          tweetKAZ = tweetKAZ.upUSD.replace(tweetsKAZ.textsUSD, summary).replace(tweetsKAZ.textsChange, item.change);
-          tweetRUS = tweetRUS.upUSD.replace(tweetsRUS.textsUSD, summary).replace(tweetsRUS.textsChange, item.change);
+          tweetKAZ = tweetsKAZ.upUSD.replace(tweetsKAZ.textsUSD, summary).replace(tweetsKAZ.textsChange, item.change);
+          tweetRUS = tweetsRUS.upUSD.replace(tweetsRUS.textsUSD, summary).replace(tweetsRUS.textsChange, item.change);
           break;
         default:
           tweetKAZ = tweetsKAZ.stable.replace(tweetsKAZ.textsUSD, summary);
@@ -91,10 +92,10 @@ _event.on('received', function(feedparser) {
           tweetRUS = tweetRUS.replace(tweetsRUS.textsRUB, summary);
           break;
         }
-				tweet.kaz = tweetKAZ;
-				tweet.rus = tweetRUS;
-				_event.emit('tweet', tweet);
-				break;
+        tweet.kaz = tweetKAZ;
+        tweet.rus = tweetRUS;
+        _event.emit('tweet', tweet);
+        break;
       }
       break;
     }
