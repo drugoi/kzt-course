@@ -19,10 +19,10 @@
     "cron": "^1.0.5",
     "express": "^4.10.2",
     "feed-read": "0.0.1",
-    "feedparser": "^0.19.2",
-    "newrelic": "^1.13.4",
-    "request": "^2.48.0",
+    "feedparser": "^1.1.4",
+    "newrelic": "^1.28.0",
+    "request": "^2.72.0",
     "time": "^0.11.0",
-    "twit": "^1.1.18"
+    "twit": "^2.2.4"
   }
 }
