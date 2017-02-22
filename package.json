@@ -8,9 +8,6 @@
   },
   "author": "Nikita Bayev",
   "license": "MIT",
-  "engines": {
-    "node": "5.11.x"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/drugoi/kzt-course.git"
@@ -20,7 +17,6 @@
     "express": "^4.14.1",
     "feed-read": "0.0.1",
     "feedparser": "^2.1.0",
-    "newrelic": "^1.37.2",
     "request": "^2.79.0",
     "time": "^0.11.4",
     "twit": "^2.2.5"
