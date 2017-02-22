@@ -1,6 +1,5 @@
 'use strict';
 
-require('newrelic');
 const express = require('express');
 const app = express();
 const FeedParser = require('feedparser');
@@ -9,16 +8,20 @@ const events = require('events');
 const _event = new events.EventEmitter();
 const Twit = require('twit');
 const CronJob = require('cron').CronJob;
+
 const tweetsRUS = require('./tweets_rus.json');
 const tweetsKAZ = require('./tweets_kaz.json');
-let tweetRUS, tweetKAZ;
+let tweetRUS;
+let tweetKAZ;
+
 const tweet = {};
 const T = new Twit({
-  consumer_key: process.env.CONSUMER_KEY,
-  consumer_secret: process.env.CONSUMER_SECRET,
-  access_token: process.env.ACCESS_TOKEN,
-  access_token_secret: process.env.ACCESS_TOKEN_SECRET
+  consumer_key: process.env.KZT_TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.KZT_TWITTER_CONSUMER_SECRET,
+  access_token: process.env.KZT_TWITTER_ACCESS_TOKEN,
+  access_token_secret: process.env.KZT_TWITTER_ACCESS_TOKEN_SECRET
 });
+
 const sendTweet = tweet => {
   T.post('statuses/update', {
     status: tweet
@@ -27,6 +30,7 @@ const sendTweet = tweet => {
     console.log(data.text);
   });
 };
+
 const getRSS = () => {
   const req = request('http://www.nationalbank.kz/rss/rates_all.xml');
   const feedparser = new FeedParser();
