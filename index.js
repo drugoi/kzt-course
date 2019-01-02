@@ -155,6 +155,6 @@ if (process.env.KZT_TWITTER_CONSUMER_KEY) {
   job.start()
 }
 
-if (process.env.DEBUG) {
+if (process.env.DEBUG === 'true') {
   getRSS()
 }
