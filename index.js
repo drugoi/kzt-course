@@ -1,27 +1,29 @@
-const FeedParser = require('feedparser');
-const request = require('request');
-const events = require('events');
-const Twit = require('twit');
-const CronJob = require('cron').CronJob;
+require('dotenv').config()
 
-const _event = new events.EventEmitter();
+const FeedParser = require('feedparser')
+const request = require('request')
+const events = require('events')
+const Twit = require('twit')
+const CronJob = require('cron').CronJob
 
-const tweetsRUS = require('./tweets_rus.json');
-const tweetsKAZ = require('./tweets_kaz.json');
-const nationalBankRates = 'http://www.nationalbank.kz/rss/rates_all.xml';
+const _event = new events.EventEmitter()
 
-let tweetRUS;
-let tweetKAZ;
+const tweetsRUS = require('./tweets_rus.json')
+const tweetsKAZ = require('./tweets_kaz.json')
+const nationalBankRates = 'http://www.nationalbank.kz/rss/rates_all.xml'
 
-const tweet = {};
-let sendTweet;
+let tweetRUS
+let tweetKAZ
+
+const tweet = {}
+let sendTweet
 if (process.env.KZT_TWITTER_CONSUMER_KEY) {
   const T = new Twit({
     consumer_key: process.env.KZT_TWITTER_CONSUMER_KEY,
     consumer_secret: process.env.KZT_TWITTER_CONSUMER_SECRET,
     access_token: process.env.KZT_TWITTER_ACCESS_TOKEN,
     access_token_secret: process.env.KZT_TWITTER_ACCESS_TOKEN_SECRET
-  });
+  })
   sendTweet = tweet => {
     T.post(
       'statuses/update',
@@ -29,130 +31,128 @@ if (process.env.KZT_TWITTER_CONSUMER_KEY) {
         status: tweet
       },
       (err, { text }) => {
-        if (err) throw err;
-        console.log(text);
+        if (err) throw err
+        console.log(text)
       }
-    );
-  };
+    )
+  }
 }
 
 const getRSS = () => {
-  const req = request(nationalBankRates);
-  const feedparser = new FeedParser();
+  const req = request(nationalBankRates)
+  const feedparser = new FeedParser()
   req.on('error', error => {
-    console.error(error);
-  });
-  req.on('response', function({ statusCode }) {
-    const stream = this;
+    console.error(error)
+  })
+  req.on('response', function ({ statusCode }) {
+    const stream = this
     if (statusCode !== 200) {
-      return this.emit('error', new Error('Bad status code'));
+      return this.emit('error', new Error('Bad status code'))
     }
-    stream.pipe(feedparser);
-    _event.emit('received', feedparser);
-  });
-};
+    stream.pipe(feedparser)
+    _event.emit('received', feedparser)
+  })
+}
 _event.on('received', feedparser => {
   feedparser.on('error', error => {
-    console.error(error);
-  });
-  feedparser.on('readable', function() {
-    const stream = this;
-    let item;
-    let summary;
+    console.error(error)
+  })
+  feedparser.on('readable', function () {
+    const stream = this
+    let item
+    let summary
     while ((item = stream.read()) !== null) {
       switch (item.title) {
         case 'USD':
-          summary = item.summary;
-          console.log(summary);
+          summary = item.summary
+          console.log(summary)
           switch (item.index) {
             case 'DOWN':
               tweetKAZ = tweetsKAZ.downUSD
                 .replace(tweetsKAZ.textsUSD, summary)
-                .replace(tweetsKAZ.textsChange, item.change);
+                .replace(tweetsKAZ.textsChange, item.change)
               tweetRUS = tweetsRUS.downUSD
                 .replace(tweetsRUS.textsUSD, summary)
-                .replace(tweetsRUS.textsChange, item.change);
-              break;
+                .replace(tweetsRUS.textsChange, item.change)
+              break
             case 'UP':
               tweetKAZ = tweetsKAZ.upUSD
                 .replace(tweetsKAZ.textsUSD, summary)
-                .replace(tweetsKAZ.textsChange, item.change);
+                .replace(tweetsKAZ.textsChange, item.change)
               tweetRUS = tweetsRUS.upUSD
                 .replace(tweetsRUS.textsUSD, summary)
-                .replace(tweetsRUS.textsChange, item.change);
-              break;
+                .replace(tweetsRUS.textsChange, item.change)
+              break
             default:
-              tweetKAZ = tweetsKAZ.stable.replace(tweetsKAZ.textsUSD, summary);
-              tweetRUS = tweetsRUS.stable.replace(tweetsRUS.textsUSD, summary);
-              break;
+              tweetKAZ = tweetsKAZ.stable.replace(tweetsKAZ.textsUSD, summary)
+              tweetRUS = tweetsRUS.stable.replace(tweetsRUS.textsUSD, summary)
+              break
           }
-          break;
+          break
         case 'EUR':
-          summary = item.summary;
+          summary = item.summary
           switch (item.index) {
             case 'DOWN':
               tweetKAZ = tweetKAZ.downEUR
                 .replace(tweetsKAZ.textsEUR, summary)
-                .replace(tweetsKAZ.textsChange, item.change);
+                .replace(tweetsKAZ.textsChange, item.change)
               tweetRUS = tweetRUS.downEUR
                 .replace(tweetsRUS.textsEUR, summary)
-                .replace(tweetsRUS.textsChange, item.change);
-              break;
+                .replace(tweetsRUS.textsChange, item.change)
+              break
             case 'UP':
               tweetKAZ = tweetKAZ.upEUR
                 .replace(tweetsKAZ.textsEUR, summary)
-                .replace(tweetsKAZ.textsChange, item.change);
+                .replace(tweetsKAZ.textsChange, item.change)
               tweetRUS = tweetRUS.upEUR
                 .replace(tweetsRUS.textsEUR, summary)
-                .replace(tweetsRUS.textsChange, item.change);
-              break;
+                .replace(tweetsRUS.textsChange, item.change)
+              break
             default:
-              tweetKAZ = tweetKAZ.replace(tweetsKAZ.textsEUR, summary);
-              tweetRUS = tweetRUS.replace(tweetsRUS.textsEUR, summary);
-              break;
+              tweetKAZ = tweetKAZ.replace(tweetsKAZ.textsEUR, summary)
+              tweetRUS = tweetRUS.replace(tweetsRUS.textsEUR, summary)
+              break
           }
-          break;
+          break
         case 'RUB':
-          summary = item.summary;
+          summary = item.summary
           switch (item.index) {
             default:
-              tweetKAZ = tweetKAZ.replace(tweetsKAZ.textsRUB, summary);
-              tweetRUS = tweetRUS.replace(tweetsRUS.textsRUB, summary);
-              break;
+              tweetKAZ = tweetKAZ.replace(tweetsKAZ.textsRUB, summary)
+              tweetRUS = tweetRUS.replace(tweetsRUS.textsRUB, summary)
+              break
           }
-          tweet.kaz = tweetKAZ;
-          tweet.rus = tweetRUS;
-          _event.emit('tweet', tweet);
-          break;
+          tweet.kaz = tweetKAZ
+          tweet.rus = tweetRUS
+          _event.emit('tweet', tweet)
+          break
       }
-      break;
+      break
     }
-  });
-});
+  })
+})
 
 _event.on('tweet', ({ kaz, rus }) => {
   if (process.env.KZT_TWITTER_CONSUMER_KEY) {
-    sendTweet(kaz);
-    sendTweet(rus);
+    sendTweet(kaz)
+    sendTweet(rus)
   } else {
-    console.log(kaz);
-    console.log(rus);
+    console.log(kaz)
+    console.log(rus)
   }
-});
+})
 
 const job = new CronJob({
   cronTime: '00 09 * * *',
-  onTick() {
-    getRSS();
+  onTick () {
+    getRSS()
   },
   start: true,
   timeZone: 'Asia/Almaty'
-});
+})
 
 if (process.env.KZT_TWITTER_CONSUMER_KEY) {
-  job.start();
+  job.start()
 } else {
-  getRSS();
+  getRSS()
 }
-
-require('./server')();
