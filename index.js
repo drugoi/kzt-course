@@ -32,7 +32,7 @@ if (process.env.KZT_TWITTER_CONSUMER_KEY) {
       },
       (err, { text }) => {
         if (err) throw err
-        console.log(text)
+        console.info(text)
       }
     )
   }
@@ -65,7 +65,7 @@ _event.on('received', feedparser => {
       switch (item.title) {
         case 'USD':
           summary = item.summary
-          console.log(summary)
+          console.info(summary)
           switch (item.index) {
             case 'DOWN':
               tweetKAZ = tweetsKAZ.downUSD
@@ -137,8 +137,8 @@ _event.on('tweet', ({ kaz, rus }) => {
     sendTweet(kaz)
     sendTweet(rus)
   } else {
-    console.log(kaz)
-    console.log(rus)
+    console.info(kaz)
+    console.info(rus)
   }
 })
 
@@ -153,6 +153,8 @@ const job = new CronJob({
 
 if (process.env.KZT_TWITTER_CONSUMER_KEY) {
   job.start()
-} else {
+}
+
+if (process.env.DEBUG) {
   getRSS()
 }
