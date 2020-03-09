@@ -8,8 +8,9 @@ const CronJob = require('cron').CronJob
 
 const _event = new events.EventEmitter()
 
-const tweetsRUS = require('./tweets_rus.json')
-const tweetsKAZ = require('./tweets_kaz.json')
+const tweetsRUS = require('./locales/ru.json')
+const tweetsKAZ = require('./locales/kk.json')
+
 const nationalBankRates = 'http://www.nationalbank.kz/rss/rates_all.xml'
 
 let tweetRUS
