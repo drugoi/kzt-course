@@ -3,9 +3,10 @@
   "textsEUR": "{summary_eur}",
   "textsRUB": "{summary_rub}",
   "textsChange": "{summary_change}",
-  "stable": "Бүгін менің бағам 1 АҚШ Доллары үшін {summary_usd}, 1 Евро үшін {summary_eur} Теңге, ал 1 Ресейлік Рубль үшін {summary_rub}. #тұрақтылық",
-  "downEUR": "Бүгін Евроға қарсы мен {summary_change} қүладым ({summary_eur}), ал 1 АҚШ Доллар бағасы — {summary_usd} Теңге. #тұрақтылық",
-  "downUSD": "Бүгін АҚШ Долларына қарсы мен {summary_change} қүладым ({summary_usd}), ал 1 Евро бағасы — {summary_eur} Теңге. #тұрақтылық",
-  "upEUR": "Бүгін Евроға қарсы мен {summary_change} көтерілдім ({summary_eur}), ал 1 АҚШ Доллар бағасы — {summary_usd} Теңге. #тұрақтылық",
-  "upUSD": "Бүгін АҚШ Долларына қарсы мен {summary_change} көтерілдім ({summary_usd}), ал 1 Евро бағасы — {summary_eur} Теңге. #тұрақтылық"
+  "hashtag": "#тұрақсыздық",
+  "stable": "Бүгін менің бағам 1 АҚШ Доллары үшін {summary_usd}, 1 Евро үшін {summary_eur} Теңге, ал 1 Ресейлік Рубль үшін {summary_rub}.",
+  "downEUR": "Бүгін Евроға қарсы мен {summary_change} қүладым ({summary_eur}), ал 1 АҚШ Доллар бағасы — {summary_usd} Теңге.",
+  "downUSD": "Бүгін АҚШ Долларына қарсы мен {summary_change} қүладым ({summary_usd}), ал 1 Евро бағасы — {summary_eur} Теңге.",
+  "upEUR": "Бүгін Евроға қарсы мен {summary_change} көтерілдім ({summary_eur}), ал 1 АҚШ Доллар бағасы — {summary_usd} Теңге.",
+  "upUSD": "Бүгін АҚШ Долларына қарсы мен {summary_change} көтерілдім ({summary_usd}), ал 1 Евро бағасы — {summary_eur} Теңге."
 }

@@ -3,9 +3,10 @@
   "textsEUR": "{summary_eur}",
   "textsRUB": "{summary_rub}",
   "textsChange": "{summary_change}",
-  "stable": "Сегодня моя цена {summary_usd} за Доллар США, {summary_eur} за Евро и {summary_rub} за Российский рубль. #стабильность",
-  "downEUR": "Сегодня в Евро я упал на {summary_change} ({summary_eur}), а цена 1 Доллара США — {summary_usd}. #стабильность",
-  "downUSD": "Сегодня в Долларах США я упал на {summary_change} ({summary_usd}), а цена 1 Евро — {summary_eur}. #стабильность",
-  "upEUR": "Сегодня в Евро я поднялся на {summary_change} ({summary_eur}), а цена 1 Доллара США — {summary_usd}. #стабильность",
-  "upUSD": "Сегодня в Долларах США я поднялся на {summary_change} ({summary_usd}), а цена 1 Евро — {summary_eur}. #стабильность"
+  "hashtag": "#нестабильность",
+  "stable": "Сегодня моя цена {summary_usd} за Доллар США, {summary_eur} за Евро и {summary_rub} за Российский рубль.",
+  "downEUR": "Сегодня в Евро я упал на {summary_change} ({summary_eur}), а цена 1 Доллара США — {summary_usd}.",
+  "downUSD": "Сегодня в Долларах США я упал на {summary_change} ({summary_usd}), а цена 1 Евро — {summary_eur}.",
+  "upEUR": "Сегодня в Евро я поднялся на {summary_change} ({summary_eur}), а цена 1 Доллара США — {summary_usd}.",
+  "upUSD": "Сегодня в Долларах США я поднялся на {summary_change} ({summary_usd}), а цена 1 Евро — {summary_eur}."
 }

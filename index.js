@@ -16,26 +16,31 @@ let tweetRUS
 let tweetKAZ
 
 const tweet = {}
-let sendTweet
+
+let TwitterAPI = null
 if (process.env.KZT_TWITTER_CONSUMER_KEY) {
-  const T = new Twit({
+  TwitterAPI = new Twit({
     consumer_key: process.env.KZT_TWITTER_CONSUMER_KEY,
     consumer_secret: process.env.KZT_TWITTER_CONSUMER_SECRET,
     access_token: process.env.KZT_TWITTER_ACCESS_TOKEN,
     access_token_secret: process.env.KZT_TWITTER_ACCESS_TOKEN_SECRET
   })
-  sendTweet = tweet => {
-    T.post(
-      'statuses/update',
-      {
-        status: tweet
-      },
-      (err, { text }) => {
-        if (err) throw err
-        console.info(text)
-      }
-    )
+}
+
+const sendTweet = tweet => {
+  if (process.env.DEBUG === 'true') {
+    return console.info('Composed tweet', tweet)
   }
+  TwitterAPI.post(
+    'statuses/update',
+    {
+      status: tweet
+    },
+    (err, { text }) => {
+      if (err) throw err
+      console.info(text)
+    }
+  )
 }
 
 const getRSS = () => {
@@ -53,6 +58,7 @@ const getRSS = () => {
     _event.emit('received', feedparser)
   })
 }
+
 _event.on('received', feedparser => {
   feedparser.on('error', error => {
     console.error(error)
@@ -61,6 +67,7 @@ _event.on('received', feedparser => {
     const stream = this
     let item
     let summary
+
     while ((item = stream.read()) !== null) {
       switch (item.title) {
         case 'USD':
@@ -122,8 +129,8 @@ _event.on('received', feedparser => {
               tweetRUS = tweetRUS.replace(tweetsRUS.textsRUB, summary)
               break
           }
-          tweet.kaz = tweetKAZ
-          tweet.rus = tweetRUS
+          tweet.kaz = `${tweetKAZ} ${tweetsKAZ.hashtag}`
+          tweet.rus = `${tweetRUS} ${tweetsRUS.hashtag}`
           _event.emit('tweet', tweet)
           break
       }
@@ -133,13 +140,8 @@ _event.on('received', feedparser => {
 })
 
 _event.on('tweet', ({ kaz, rus }) => {
-  if (process.env.KZT_TWITTER_CONSUMER_KEY) {
-    sendTweet(kaz)
-    sendTweet(rus)
-  } else {
-    console.info(kaz)
-    console.info(rus)
-  }
+  sendTweet(kaz)
+  sendTweet(rus)
 })
 
 const job = new CronJob({
