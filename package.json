@@ -1,6 +1,7 @@
 {
   "name": "kzt-twitter",
-  "version": "1.1.0",
+  "private": true,
+  "version": "2.0.0",
   "description": "Simple Twitter bot for tweeting course of Kazakhstan Tenge",
   "main": "index.js",
   "scripts": {
@@ -13,16 +14,16 @@
     "url": "https://github.com/drugoi/kzt-course.git"
   },
   "dependencies": {
+    "axios": "^0.26.0",
     "cron": "^1.8.2",
-    "dotenv": "^10.0.0",
-    "feedparser": "^2.2.10",
-    "request": "^2.88.2",
-    "twit": "^2.2.11"
+    "dotenv": "^16.0.0",
+    "twit": "^2.2.11",
+    "xml2json": "^0.12.0"
   },
   "devDependencies": {
-    "eslint": "^7.27.0",
+    "eslint": "^8.10.0",
     "eslint-config-standard": "^16.0.2",
-    "eslint-plugin-import": "^2.23.3",
+    "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-standard": "^5.0.0"
   }

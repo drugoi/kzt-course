@@ -1,12 +1,3 @@
 {
-  "textsUSD": "{summary_usd}",
-  "textsEUR": "{summary_eur}",
-  "textsRUB": "{summary_rub}",
-  "textsChange": "{summary_change}",
-  "hashtag": "#нестабильность",
-  "stable": "Сегодня моя цена {summary_usd} за Доллар США, {summary_eur} за Евро и {summary_rub} за Российский рубль.",
-  "downEUR": "Сегодня в Евро я упал на {summary_change} ({summary_eur}), а цена 1 Доллара США — {summary_usd}.",
-  "downUSD": "Сегодня в Долларах США я упал на {summary_change} ({summary_usd}), а цена 1 Евро — {summary_eur}.",
-  "upEUR": "Сегодня в Евро я поднялся на {summary_change} ({summary_eur}), а цена 1 Доллара США — {summary_usd}.",
-  "upUSD": "Сегодня в Долларах США я поднялся на {summary_change} ({summary_usd}), а цена 1 Евро — {summary_eur}."
+  "text": "Сегодня моя цена {RATE_USD} ₸ ({RATE_CHANGE_USD}) за Доллар США, {RATE_EUR} ₸ ({RATE_CHANGE_EUR}) за Евро и {RATE_RUB} ₸ ({RATE_CHANGE_RUB}) за российский рубль. #нестабильность"
 }

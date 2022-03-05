@@ -1,24 +1,20 @@
 require('dotenv').config()
 
-const FeedParser = require('feedparser')
-const request = require('request')
-const events = require('events')
+const axios = require('axios')
+const parser = require('xml2json')
+
 const Twit = require('twit')
 const CronJob = require('cron').CronJob
 
-const _event = new events.EventEmitter()
-
-const tweetsRUS = require('./locales/ru.json')
-const tweetsKAZ = require('./locales/kk.json')
+const tweetsRU = require('./locales/ru.json')
+const tweetsKK = require('./locales/kk.json')
 
 const nationalBankRates = 'http://www.nationalbank.kz/rss/rates_all.xml'
 
-let tweetRUS
-let tweetKAZ
-
-const tweet = {}
+const monitoredCurrencies = ['RUB', 'EUR', 'USD']
 
 let TwitterAPI = null
+
 if (process.env.KZT_TWITTER_CONSUMER_KEY) {
   TwitterAPI = new Twit({
     consumer_key: process.env.KZT_TWITTER_CONSUMER_KEY,
@@ -39,116 +35,83 @@ const sendTweet = tweet => {
     },
     (err, { text }) => {
       if (err) throw err
-      console.info(text)
+      console.info('🚀 ~ text', text)
     }
   )
 }
 
-const getRSS = () => {
-  const req = request(nationalBankRates)
-  const feedparser = new FeedParser()
-  req.on('error', error => {
-    console.error(error)
-  })
-  req.on('response', function ({ statusCode }) {
-    const stream = this
-    if (statusCode !== 200) {
-      return this.emit('error', new Error('Bad status code'))
-    }
-    stream.pipe(feedparser)
-    _event.emit('received', feedparser)
-  })
+const formatText = (text, currenciesMap) => {
+  return text
+    .replace('{RATE_USD}', currenciesMap.USD.amount)
+    .replace('{RATE_CHANGE_USD}', currenciesMap.USD.change)
+    .replace('{RATE_RUB}', currenciesMap.RUB.amount)
+    .replace('{RATE_CHANGE_RUB}', currenciesMap.RUB.change)
+    .replace('{RATE_EUR}', currenciesMap.EUR.amount)
+    .replace('{RATE_CHANGE_EUR}', currenciesMap.EUR.change)
 }
 
-_event.on('received', feedparser => {
-  feedparser.on('error', error => {
-    console.error(error)
-  })
-  feedparser.on('readable', function () {
-    const stream = this
-    let item
-    let summary
-
-    while ((item = stream.read()) !== null) {
-      switch (item.title) {
-        case 'USD':
-          summary = item.summary
-          console.info(summary)
-          switch (item.index) {
-            case 'DOWN':
-              tweetKAZ = tweetsKAZ.downUSD
-                .replace(tweetsKAZ.textsUSD, summary)
-                .replace(tweetsKAZ.textsChange, item.change)
-              tweetRUS = tweetsRUS.downUSD
-                .replace(tweetsRUS.textsUSD, summary)
-                .replace(tweetsRUS.textsChange, item.change)
-              break
-            case 'UP':
-              tweetKAZ = tweetsKAZ.upUSD
-                .replace(tweetsKAZ.textsUSD, summary)
-                .replace(tweetsKAZ.textsChange, item.change)
-              tweetRUS = tweetsRUS.upUSD
-                .replace(tweetsRUS.textsUSD, summary)
-                .replace(tweetsRUS.textsChange, item.change)
-              break
-            default:
-              tweetKAZ = tweetsKAZ.stable.replace(tweetsKAZ.textsUSD, summary)
-              tweetRUS = tweetsRUS.stable.replace(tweetsRUS.textsUSD, summary)
-              break
-          }
-          break
-        case 'EUR':
-          summary = item.summary
-          switch (item.index) {
-            case 'DOWN':
-              tweetKAZ = tweetKAZ.downEUR
-                .replace(tweetsKAZ.textsEUR, summary)
-                .replace(tweetsKAZ.textsChange, item.change)
-              tweetRUS = tweetRUS.downEUR
-                .replace(tweetsRUS.textsEUR, summary)
-                .replace(tweetsRUS.textsChange, item.change)
-              break
-            case 'UP':
-              tweetKAZ = tweetKAZ.upEUR
-                .replace(tweetsKAZ.textsEUR, summary)
-                .replace(tweetsKAZ.textsChange, item.change)
-              tweetRUS = tweetRUS.upEUR
-                .replace(tweetsRUS.textsEUR, summary)
-                .replace(tweetsRUS.textsChange, item.change)
-              break
-            default:
-              tweetKAZ = tweetKAZ.replace(tweetsKAZ.textsEUR, summary)
-              tweetRUS = tweetRUS.replace(tweetsRUS.textsEUR, summary)
-              break
-          }
-          break
-        case 'RUB':
-          summary = item.summary
-          switch (item.index) {
-            default:
-              tweetKAZ = tweetKAZ.replace(tweetsKAZ.textsRUB, summary)
-              tweetRUS = tweetRUS.replace(tweetsRUS.textsRUB, summary)
-              break
-          }
-          tweet.kaz = `${tweetKAZ} ${tweetsKAZ.hashtag}`
-          tweet.rus = `${tweetRUS} ${tweetsRUS.hashtag}`
-          _event.emit('tweet', tweet)
-          break
+const generateTweet = rates => {
+  const currenciesMap = rates.reduce(
+    (acc, rate) => {
+      acc[rate.title].amount = rate.description
+      acc[rate.title].change = rate.change
+      return acc
+    },
+    {
+      USD: {
+        amount: 0,
+        change: 0
+      },
+      RUB: {
+        amount: 0,
+        change: 0
+      },
+      EUR: {
+        amount: 0,
+        change: 0
       }
-      break
     }
-  })
-})
+  )
 
-_event.on('tweet', ({ kaz, rus }) => {
-  sendTweet(kaz)
-  sendTweet(rus)
-})
+  const tweetRU = formatText(tweetsRU.text, currenciesMap)
+  const tweetKK = formatText(tweetsKK.text, currenciesMap)
+
+  return {
+    tweetRU,
+    tweetKK
+  }
+}
+
+const getMonitoredRates = rates => {
+  return rates.filter(rate => monitoredCurrencies.includes(rate.title))
+}
+
+const parseXml = xml => {
+  const parsedJson = parser.toJson(xml)
+  const rates = JSON.parse(parsedJson).rss.channel.item
+
+  return rates
+}
+
+const getRSS = async () => {
+  const rates = await axios.get(nationalBankRates, {
+    headers: { 'Content-Type': 'text/xml' }
+  })
+
+  return rates.data
+}
 
 const job = new CronJob({
   cronTime: '00 09 * * *',
-  onTick () {
+  onTick: () => {
     getRSS()
+      .then(parseXml)
+      .then(getMonitoredRates)
+      .then(generateTweet)
+      .then(({ tweetKK, tweetRU }) => {
+        sendTweet(tweetKK)
+        sendTweet(tweetRU)
+      })
   },
   start: true,
   timeZone: 'Asia/Almaty'
@@ -158,6 +121,22 @@ if (process.env.KZT_TWITTER_CONSUMER_KEY) {
   job.start()
 }
 
-if (process.env.DEBUG === 'true' || process.env.FORCE_UPDATE === 'true') {
+if (
+  process.env.NODE_ENV !== 'production' ||
+  process.env.DEBUG === 'true' ||
+  process.env.FORCE_UPDATE === 'true'
+) {
   getRSS()
+    .then(parseXml)
+    .then(getMonitoredRates)
+    .then(generateTweet)
+    .then(({ tweetKK, tweetRU }) => {
+      if (process.env.FORCE_UPDATE === 'true') {
+        sendTweet(tweetKK)
+        sendTweet(tweetRU)
+      } else {
+        console.log('🚀 ~ .then ~ tweetKK, tweetRU', { tweetKK, tweetRU })
+        process.exit()
+      }
+    })
 }
