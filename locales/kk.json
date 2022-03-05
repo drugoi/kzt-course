@@ -1,12 +1,3 @@
 {
-  "textsUSD": "{summary_usd}",
-  "textsEUR": "{summary_eur}",
-  "textsRUB": "{summary_rub}",
-  "textsChange": "{summary_change}",
-  "hashtag": "#тұрақсыздық",
-  "stable": "Бүгін менің бағам 1 АҚШ Доллары үшін {summary_usd}, 1 Евро үшін {summary_eur} Теңге, ал 1 Ресейлік Рубль үшін {summary_rub}.",
-  "downEUR": "Бүгін Евроға қарсы мен {summary_change} қүладым ({summary_eur}), ал 1 АҚШ Доллар бағасы — {summary_usd} Теңге.",
-  "downUSD": "Бүгін АҚШ Долларына қарсы мен {summary_change} қүладым ({summary_usd}), ал 1 Евро бағасы — {summary_eur} Теңге.",
-  "upEUR": "Бүгін Евроға қарсы мен {summary_change} көтерілдім ({summary_eur}), ал 1 АҚШ Доллар бағасы — {summary_usd} Теңге.",
-  "upUSD": "Бүгін АҚШ Долларына қарсы мен {summary_change} көтерілдім ({summary_usd}), ал 1 Евро бағасы — {summary_eur} Теңге."
+  "text": "Қазіргі таңда доллар құны {RATE_USD} ₸ ({RATE_CHANGE_USD}), Евро құны {RATE_EUR} ₸ ({RATE_CHANGE_EUR}) және Ресей рубль құны {RATE_RUB} ₸ ({RATE_CHANGE_RUB}). #тұрақсыздық"
 }
