@@ -9,7 +9,7 @@ const CronJob = require('cron').CronJob
 const tweetsRU = require('./locales/ru.json')
 const tweetsKK = require('./locales/kk.json')
 
-const nationalBankRates = 'http://www.nationalbank.kz/rss/rates_all.xml'
+const nationalBankRates = 'https://www.nationalbank.kz/rss/rates_all.xml'
 
 const monitoredCurrencies = ['RUB', 'EUR', 'USD']
 
