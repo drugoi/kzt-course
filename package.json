@@ -14,16 +14,16 @@
     "url": "https://github.com/drugoi/kzt-course.git"
   },
   "dependencies": {
-    "axios": "^0.26.0",
-    "cron": "^1.8.2",
-    "dotenv": "^16.0.0",
+    "axios": "^0.27.2",
+    "cron": "^2.1.0",
+    "dotenv": "^16.0.2",
     "twit": "^2.2.11",
     "xml2json": "^0.12.0"
   },
   "devDependencies": {
-    "eslint": "^8.10.0",
-    "eslint-config-standard": "^16.0.2",
-    "eslint-plugin-import": "^2.25.4",
+    "eslint": "^8.23.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-standard": "^5.0.0"
   }
