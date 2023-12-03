@@ -1,37 +1,37 @@
-require('dotenv').config()
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 import { CronJob } from 'cron'
+import { TwitterApi, TwitterApiTokens } from 'twitter-api-v2'
+
 import { formatText } from './format'
 import { getMonitoredRates, getRSS, parseXml } from './parse'
 import tweetsRU from './locales/ru.json'
 import tweetsKK from './locales/kk.json'
 import { CurrenciesMap, Rates } from './types'
 
-let TwitterAPI: any = null
+let TwitterClient: any = null
 
-// if (process.env.KZT_TWITTER_CONSUMER_KEY) {
-//   TwitterAPI = new Twit({
-//     consumer_key: process.env.KZT_TWITTER_CONSUMER_KEY,
-//     consumer_secret: process.env.KZT_TWITTER_CONSUMER_SECRET,
-//     access_token: process.env.KZT_TWITTER_ACCESS_TOKEN,
-//     access_token_secret: process.env.KZT_TWITTER_ACCESS_TOKEN_SECRET
-//   })
-// }
+if (process.env.KZT_TWITTER_CONSUMER_KEY) {
+  TwitterClient = new TwitterApi({
+    appKey: process.env.KZT_TWITTER_CONSUMER_KEY,
+    appSecret: process.env.KZT_TWITTER_CONSUMER_SECRET,
+    accessToken: process.env.KZT_TWITTER_ACCESS_TOKEN,
+    accessSecret: process.env.KZT_TWITTER_ACCESS_TOKEN_SECRET
+  } as TwitterApiTokens)
+}
 
-const sendTweet = (tweet: string) => {
+const sendTweet = async (tweet: string) => {
   if (process.env.DEBUG === 'true') {
     return console.info('Composed tweet', tweet)
   }
-  TwitterAPI.post(
-    'statuses/update',
-    {
-      status: tweet
-    },
-    (err: any, { text }: any) => {
-      if (err) throw err
-      console.error('🚀 ~ text', text)
-    }
-  )
+
+  try {
+    await TwitterClient.v2.tweet(tweet)
+  } catch (error) {
+    console.error('🚀 ~ sendTweet ~ error:', error)
+  }
 }
 
 const generateTweet = (rates: Rates) => {

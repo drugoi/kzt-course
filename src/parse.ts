@@ -5,7 +5,7 @@ import { monitoredCurrencies, nationalBankRates } from './config'
 import { Rates } from './types'
 
 export const getMonitoredRates = (rates: Rates) => {
-  return rates.filter((rate: any) => monitoredCurrencies.includes(rate.title))
+  return rates.filter(rate => monitoredCurrencies.includes(rate.title))
 }
 
 export const parseXml = async (xml: string) => {
