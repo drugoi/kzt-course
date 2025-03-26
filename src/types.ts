@@ -20,3 +20,18 @@ interface Rate {
 }
 
 export type Rates = Rate[]
+
+export type ChangeDirection = 'up' | 'down' | 'no_change'
+
+export interface LocaleText {
+  text: {
+    up: string
+    down: string
+    no_change: string
+  }
+}
+
+export interface Locales {
+  ru: LocaleText
+  kk: LocaleText
+}

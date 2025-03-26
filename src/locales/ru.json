@@ -1,3 +1,7 @@
 {
-  "text": "Сегодня моя цена {RATE_USD} ₸ ({RATE_CHANGE_USD}) за Доллар США, {RATE_EUR} ₸ ({RATE_CHANGE_EUR}) за Евро и {RATE_RUB} ₸ ({RATE_CHANGE_RUB}) за российский рубль. #нестабильность"
+  "text": {
+    "up": "Сегодня моя цена {RATE_USD} ₸ (+{RATE_CHANGE_USD}) за Доллар США, {RATE_EUR} ₸ (+{RATE_CHANGE_EUR}) за Евро и {RATE_RUB} ₸ (+{RATE_CHANGE_RUB}) за российский рубль. Курс растет!",
+    "down": "Сегодня моя цена {RATE_USD} ₸ (-{RATE_CHANGE_USD}) за Доллар США, {RATE_EUR} ₸ (-{RATE_CHANGE_EUR}) за Евро и {RATE_RUB} ₸ (-{RATE_CHANGE_RUB}) за российский рубль. Курс падает!",
+    "no_change": "Сегодня моя цена {RATE_USD} ₸ за Доллар США, {RATE_EUR} ₸ за Евро и {RATE_RUB} ₸ за российский рубль. Курс стабилен."
+  }
 }

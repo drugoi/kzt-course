@@ -9,7 +9,7 @@ import { formatText } from './format'
 import { getMonitoredRates, getRSS, parseXml } from './parse'
 import tweetsRU from './locales/ru.json'
 import tweetsKK from './locales/kk.json'
-import { CurrenciesMap, Rates } from './types'
+import { CurrenciesMap, Rates, LocaleText } from './types'
 
 let TwitterClient: any = null
 
@@ -23,22 +23,33 @@ if (process.env.KZT_TWITTER_CONSUMER_KEY) {
 }
 
 const sendTweet = async (tweet: string) => {
-  if (process.env.DEBUG === 'true') {
+  if (process.env.DEBUG === 'true' && process.env.NODE_ENV !== 'test') {
     return console.info('Composed tweet', tweet)
   }
 
   try {
     await TwitterClient.v2.tweet(tweet)
   } catch (error) {
-    console.error('🚀 ~ sendTweet ~ error:', error)
+    if (process.env.NODE_ENV !== 'test') {
+      console.error('🚀 ~ sendTweet ~ error:', error)
+    }
   }
 }
 
 const generateTweet = (rates: Rates) => {
+  if (!rates || !Array.isArray(rates)) {
+    return {
+      tweetRU: '',
+      tweetKK: ''
+    }
+  }
+
   const currenciesMap = rates.reduce(
     (acc: CurrenciesMap, rate) => {
-      acc[rate.title as keyof CurrenciesMap].amount = rate.description
-      acc[rate.title as keyof CurrenciesMap].change = rate.change
+      if (rate.title && rate.title in acc) {
+        acc[rate.title as keyof CurrenciesMap].amount = rate.description
+        acc[rate.title as keyof CurrenciesMap].change = rate.change
+      }
       return acc
     },
     {
@@ -57,8 +68,8 @@ const generateTweet = (rates: Rates) => {
     }
   )
 
-  const tweetRU = formatText(tweetsRU.text, currenciesMap)
-  const tweetKK = formatText(tweetsKK.text, currenciesMap)
+  const tweetRU = formatText((tweetsRU as LocaleText).text, currenciesMap)
+  const tweetKK = formatText((tweetsKK as LocaleText).text, currenciesMap)
 
   return {
     tweetRU,
@@ -66,36 +77,53 @@ const generateTweet = (rates: Rates) => {
   }
 }
 
-const processRates = async () => {
-  const xmlRates = await getRSS()
-  const parsedRates = await parseXml(xmlRates)
-  const monitoredRates = getMonitoredRates(parsedRates)
+export const processRates = async () => {
+  try {
+    const xmlRates = await getRSS()
+    const parsedRates = await parseXml(xmlRates)
+    const monitoredRates = getMonitoredRates(parsedRates)
 
-  const { tweetKK, tweetRU } = generateTweet(monitoredRates)
+    const { tweetKK, tweetRU } = generateTweet(monitoredRates)
 
-  if (
-    process.env.FORCE_UPDATE === 'true' ||
-    process.env.NODE_ENV === 'production'
-  ) {
-    sendTweet(tweetKK)
-    sendTweet(tweetRU)
-  } else {
-    console.log('🚀 ~ tweetKK, tweetRU', { tweetKK, tweetRU })
-    process.exit()
+    if (
+      process.env.FORCE_UPDATE === 'true' ||
+      process.env.NODE_ENV === 'production'
+    ) {
+      await sendTweet(tweetKK)
+      await sendTweet(tweetRU)
+    } else {
+      if (process.env.NODE_ENV !== 'test') {
+        console.log('🚀 ~ tweetKK, tweetRU', { tweetKK, tweetRU })
+      }
+      if (process.env.NODE_ENV !== 'test') {
+        process.exit()
+      }
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.error('Error processing rates:', error)
+    }
+    if (process.env.NODE_ENV === 'production') {
+      throw error
+    }
   }
 }
 
-const job = CronJob.from({
-  cronTime: '00 09 * * *',
-  onTick: async () => {
-    await processRates()
-  },
-  start: true,
-  timeZone: 'Asia/Almaty'
-})
+let job: CronJob | null = null
 
 if (process.env.KZT_TWITTER_CONSUMER_KEY) {
-  job.start()
+  job = CronJob.from({
+    cronTime: '00 09 * * *',
+    onTick: async () => {
+      await processRates()
+    },
+    start: true,
+    timeZone: 'Asia/Almaty'
+  })
+
+  if (process.env.NODE_ENV !== 'test') {
+    job.start()
+  }
 }
 
 if (
@@ -104,4 +132,11 @@ if (
   process.env.FORCE_UPDATE === 'true'
 ) {
   processRates()
+}
+
+// Export for testing
+export const stopCronJob = () => {
+  if (job) {
+    job.stop()
+  }
 }

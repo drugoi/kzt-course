@@ -1,3 +1,7 @@
 {
-  "text": "Қазіргі таңда доллар құны {RATE_USD} ₸ ({RATE_CHANGE_USD}), Евро құны {RATE_EUR} ₸ ({RATE_CHANGE_EUR}) және Ресей рубль құны {RATE_RUB} ₸ ({RATE_CHANGE_RUB}). #тұрақсыздық"
+  "text": {
+    "up": "Қазіргі таңда доллар құны {RATE_USD} ₸ (+{RATE_CHANGE_USD}), Евро құны {RATE_EUR} ₸ (+{RATE_CHANGE_EUR}) және Ресей рубль құны {RATE_RUB} ₸ (+{RATE_CHANGE_RUB}). Курс өсуде!",
+    "down": "Қазіргі таңда доллар құны {RATE_USD} ₸ (-{RATE_CHANGE_USD}), Евро құны {RATE_EUR} ₸ (-{RATE_CHANGE_EUR}) және Ресей рубль құны {RATE_RUB} ₸ (-{RATE_CHANGE_RUB}). Курс төмендеуде!",
+    "no_change": "Қазіргі таңда доллар құны {RATE_USD} ₸, Евро құны {RATE_EUR} ₸ және Ресей рубль құны {RATE_RUB} ₸. Курс тұрақты."
+  }
 }
