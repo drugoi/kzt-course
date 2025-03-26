@@ -1,7 +1,7 @@
 {
   "name": "kzt-twitter",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Simple Twitter bot for tweeting course of Kazakhstan Tenge",
   "main": "index.js",
   "scripts": {
