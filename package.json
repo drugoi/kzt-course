@@ -21,7 +21,7 @@
     "axios": "^1.8.4",
     "cron": "^3.1.6",
     "dotenv": "^16.4.7",
-    "fast-xml-parser": "^5.2.0",
+    "fast-xml-parser": "^5.3.5",
     "twitter-api-v2": "^1.15.2",
     "typescript": "^5.3.2"
   },
@@ -36,5 +36,9 @@
     "standard-version": "^9.5.0",
     "ts-jest": "^29.3.0",
     "ts-node": "^10.9.2"
+  },
+  "overrides": {
+    "form-data": "4.0.4",
+    "handlebars": "4.7.9"
   }
 }
