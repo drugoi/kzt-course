@@ -1,0 +1,19 @@
+.github/workflows/deploy.yml
+  s_ca758912d509bd::t_ba85f8560feefd 1-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "ceca9397a6c6f0c3bec359142295ed8ac0dc73ab",
+  "prompts": {},
+  "sessions": {
+    "s_ca758912d509bd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ed489-884d-7be1-8156-a9bf988c5d08",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    }
+  }
+}
