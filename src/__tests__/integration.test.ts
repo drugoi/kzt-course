@@ -1,7 +1,7 @@
 import { processRates, stopCronJob } from '../index'
 import { getRSS, parseXml, getMonitoredRates } from '../parse'
 import { formatText } from '../format'
-import { CurrenciesMap, Rates } from '../types'
+import { Rates } from '../types'
 
 // Mock the external dependencies
 jest.mock('../parse', () => ({
