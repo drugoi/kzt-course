@@ -11,16 +11,62 @@ import tweetsRU from './locales/ru.json'
 import tweetsKK from './locales/kk.json'
 import { CurrenciesMap, Rates, LocaleText } from './types'
 
-let TwitterClient: any = null
+let twitterClient: TwitterApi | null = null
 const REQUIRED_CURRENCIES: Array<keyof CurrenciesMap> = ['USD', 'EUR', 'RUB']
 
-if (process.env.KZT_TWITTER_CONSUMER_KEY) {
-  TwitterClient = new TwitterApi({
-    appKey: process.env.KZT_TWITTER_CONSUMER_KEY,
-    appSecret: process.env.KZT_TWITTER_CONSUMER_SECRET,
-    accessToken: process.env.KZT_TWITTER_ACCESS_TOKEN,
-    accessSecret: process.env.KZT_TWITTER_ACCESS_TOKEN_SECRET
-  } as TwitterApiTokens)
+const getRequiredTwitterCredential = (
+  name: string,
+  missingCredentials: string[]
+) => {
+  const value = process.env[name]
+
+  if (typeof value === 'string' && value.trim()) {
+    return value
+  }
+
+  missingCredentials.push(name)
+  return ''
+}
+
+const getTwitterCredentials = (): TwitterApiTokens => {
+  const missingCredentials: string[] = []
+  const appKey = getRequiredTwitterCredential(
+    'KZT_TWITTER_CONSUMER_KEY',
+    missingCredentials
+  )
+  const appSecret = getRequiredTwitterCredential(
+    'KZT_TWITTER_CONSUMER_SECRET',
+    missingCredentials
+  )
+  const accessToken = getRequiredTwitterCredential(
+    'KZT_TWITTER_ACCESS_TOKEN',
+    missingCredentials
+  )
+  const accessSecret = getRequiredTwitterCredential(
+    'KZT_TWITTER_ACCESS_TOKEN_SECRET',
+    missingCredentials
+  )
+
+  if (missingCredentials.length) {
+    throw new Error(
+      `Missing Twitter credentials: ${missingCredentials.join(', ')}`
+    )
+  }
+
+  return {
+    appKey,
+    appSecret,
+    accessToken,
+    accessSecret
+  }
+}
+
+const getTwitterClient = () => {
+  if (!twitterClient) {
+    twitterClient = new TwitterApi(getTwitterCredentials())
+  }
+
+  return twitterClient
 }
 
 const sendTweet = async (tweet: string) => {
@@ -28,13 +74,7 @@ const sendTweet = async (tweet: string) => {
     return console.info('Composed tweet', tweet)
   }
 
-  try {
-    await TwitterClient.v2.tweet(tweet)
-  } catch (error) {
-    if (process.env.NODE_ENV !== 'test') {
-      console.error('🚀 ~ sendTweet ~ error:', error)
-    }
-  }
+  await getTwitterClient().v2.tweet(tweet)
 }
 
 const hasRequiredCurrencies = (
