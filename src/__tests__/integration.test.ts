@@ -123,5 +123,56 @@ describe('Integration Tests', () => {
     expect(getRSS).toHaveBeenCalled()
     expect(parseXml).toHaveBeenCalled()
     expect(getMonitoredRates).toHaveBeenCalled()
+    expect(formatText).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    [
+      [
+        {
+          title: 'USD',
+          description: '450.00',
+          change: '1.5',
+          pubDate: '2024-03-26',
+          quant: '1',
+          index: 'USD',
+          link: 'http://example.com'
+        }
+      ]
+    ],
+    [
+      [
+        {
+          title: 'USD',
+          description: '450.00',
+          change: '1.5',
+          pubDate: '2024-03-26',
+          quant: '1',
+          index: 'USD',
+          link: 'http://example.com'
+        },
+        {
+          title: 'EUR',
+          description: '480.00',
+          change: '2.0',
+          pubDate: '2024-03-26',
+          quant: '1',
+          index: 'EUR',
+          link: 'http://example.com'
+        }
+      ]
+    ]
+  ])('should not format tweets when monitored rates are partial', async (partialRates: Rates) => {
+    ;(getRSS as jest.Mock).mockResolvedValue('mock xml')
+    ;(parseXml as jest.Mock).mockResolvedValue(partialRates)
+    ;(getMonitoredRates as jest.Mock).mockReturnValue(partialRates)
+    ;(formatText as jest.Mock).mockReturnValue('Mock tweet text')
+
+    await processRates()
+
+    expect(getRSS).toHaveBeenCalled()
+    expect(parseXml).toHaveBeenCalled()
+    expect(getMonitoredRates).toHaveBeenCalled()
+    expect(formatText).not.toHaveBeenCalled()
   })
 })

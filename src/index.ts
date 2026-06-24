@@ -12,6 +12,7 @@ import tweetsKK from './locales/kk.json'
 import { CurrenciesMap, Rates, LocaleText } from './types'
 
 let TwitterClient: any = null
+const REQUIRED_CURRENCIES: Array<keyof CurrenciesMap> = ['USD', 'EUR', 'RUB']
 
 if (process.env.KZT_TWITTER_CONSUMER_KEY) {
   TwitterClient = new TwitterApi({
@@ -36,37 +37,34 @@ const sendTweet = async (tweet: string) => {
   }
 }
 
-const generateTweet = (rates: Rates) => {
-  if (!rates || !Array.isArray(rates)) {
-    return {
-      tweetRU: '',
-      tweetKK: ''
-    }
-  }
+const hasRequiredCurrencies = (
+  currenciesMap: Partial<CurrenciesMap>
+): currenciesMap is CurrenciesMap =>
+  REQUIRED_CURRENCIES.every((currency) => Boolean(currenciesMap[currency]))
 
-  const currenciesMap = rates.reduce(
-    (acc: CurrenciesMap, rate) => {
-      if (rate.title && rate.title in acc) {
-        acc[rate.title as keyof CurrenciesMap].amount = rate.description
-        acc[rate.title as keyof CurrenciesMap].change = rate.change
-      }
-      return acc
-    },
-    {
-      USD: {
-        amount: '0',
-        change: '0'
-      },
-      RUB: {
-        amount: '0',
-        change: '0'
-      },
-      EUR: {
-        amount: '0',
-        change: '0'
+const generateTweet = (rates: Rates) => {
+  const currenciesMap = rates.reduce<Partial<CurrenciesMap>>((acc, rate) => {
+    if (
+      REQUIRED_CURRENCIES.includes(rate.title as keyof CurrenciesMap) &&
+      rate.description.trim()
+    ) {
+      acc[rate.title as keyof CurrenciesMap] = {
+        amount: rate.description,
+        change: rate.change
       }
     }
+    return acc
+  }, {})
+
+  const missingCurrencies = REQUIRED_CURRENCIES.filter(
+    (currency) => !currenciesMap[currency]
   )
+
+  if (!hasRequiredCurrencies(currenciesMap)) {
+    throw new Error(
+      `Missing monitored currency rates: ${missingCurrencies.join(', ')}`
+    )
+  }
 
   const tweetRU = formatText((tweetsRU as LocaleText).text, currenciesMap)
   const tweetKK = formatText((tweetsKK as LocaleText).text, currenciesMap)
