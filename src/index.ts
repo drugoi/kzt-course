@@ -149,32 +149,50 @@ export const processRates = async () => {
 
 let job: CronJob | null = null
 
-if (process.env.KZT_TWITTER_CONSUMER_KEY) {
-  job = CronJob.from({
-    cronTime: '00 09 * * *',
-    onTick: async () => {
-      await processRates()
-    },
-    start: true,
-    timeZone: 'Asia/Almaty'
-  })
-
-  if (process.env.NODE_ENV !== 'test') {
-    job.start()
-  }
+export interface BotRuntime {
+  job: CronJob | null
+  initialRun: Promise<void> | null
+  stop: () => void
 }
 
-if (
-  process.env.NODE_ENV !== 'production' ||
-  process.env.DEBUG === 'true' ||
-  process.env.FORCE_UPDATE === 'true'
-) {
-  processRates()
-}
-
-// Export for testing
 export const stopCronJob = () => {
   if (job) {
     job.stop()
+    job = null
   }
+}
+
+export const startBot = (): BotRuntime => {
+  if (process.env.KZT_TWITTER_CONSUMER_KEY) {
+    job = CronJob.from({
+      cronTime: '00 09 * * *',
+      onTick: async () => {
+        await processRates()
+      },
+      start: false,
+      timeZone: 'Asia/Almaty'
+    })
+
+    job.start()
+  }
+
+  const initialRun =
+    process.env.NODE_ENV !== 'production' ||
+    process.env.DEBUG === 'true' ||
+    process.env.FORCE_UPDATE === 'true'
+      ? processRates()
+      : null
+
+  return {
+    job,
+    initialRun,
+    stop: stopCronJob
+  }
+}
+
+if (require.main === module) {
+  const runtime = startBot()
+  runtime.initialRun?.catch((error) => {
+    throw error
+  })
 }

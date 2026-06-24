@@ -114,15 +114,26 @@ describe('Integration Tests', () => {
     console.info = originalConsole.info
   })
 
+  it('should not process rates when importing the module', async () => {
+    jest.resetModules()
+    process.env = {
+      ...originalEnv,
+      NODE_ENV: 'test',
+      DEBUG: 'true'
+    }
+
+    const parse = await import('../parse')
+    ;(parse.getRSS as jest.Mock).mockResolvedValue('mock xml')
+
+    await import('../index')
+    await Promise.resolve()
+
+    expect(parse.getRSS).not.toHaveBeenCalled()
+  })
+
   it('should process rates and generate tweets correctly', async () => {
-    const {
-      processRates,
-      stopCronJob,
-      getRSS,
-      parseXml,
-      getMonitoredRates,
-      formatText
-    } = await loadModules()
+    const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
+      await loadModules()
     // Mock RSS data
     const mockXml = 'mock xml data'
     getRSS.mockResolvedValue(mockXml)
@@ -134,11 +145,7 @@ describe('Integration Tests', () => {
     formatText.mockReturnValue(mockFormattedText)
 
     // Process rates
-    try {
-      await processRates()
-    } finally {
-      stopCronJob()
-    }
+    await processRates()
 
     // Verify the flow
     expect(getRSS).toHaveBeenCalled()
@@ -148,18 +155,14 @@ describe('Integration Tests', () => {
   })
 
   it('should handle errors gracefully', async () => {
-    const { processRates, stopCronJob, getRSS, parseXml, getMonitoredRates } =
+    const { processRates, getRSS, parseXml, getMonitoredRates } =
       await loadModules()
     // Mock RSS to throw error
     const error = new Error('RSS Error')
     getRSS.mockRejectedValue(error)
 
     // Process rates
-    try {
-      await processRates()
-    } finally {
-      stopCronJob()
-    }
+    await processRates()
 
     // Verify error was handled
     expect(parseXml).not.toHaveBeenCalled()
@@ -167,14 +170,8 @@ describe('Integration Tests', () => {
   })
 
   it('should handle empty rates gracefully', async () => {
-    const {
-      processRates,
-      stopCronJob,
-      getRSS,
-      parseXml,
-      getMonitoredRates,
-      formatText
-    } = await loadModules()
+    const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
+      await loadModules()
     // Mock empty rates
     getRSS.mockResolvedValue('mock xml')
     parseXml.mockResolvedValue([])
@@ -182,11 +179,7 @@ describe('Integration Tests', () => {
     formatText.mockReturnValue('')
 
     // Process rates
-    try {
-      await processRates()
-    } finally {
-      stopCronJob()
-    }
+    await processRates()
 
     // Verify empty rates were handled
     expect(getRSS).toHaveBeenCalled()
@@ -234,7 +227,6 @@ describe('Integration Tests', () => {
   ])('should not format tweets when monitored rates are partial', async (partialRates: Rates) => {
     const {
       processRates,
-      stopCronJob,
       getRSS,
       parseXml,
       getMonitoredRates,
@@ -245,11 +237,7 @@ describe('Integration Tests', () => {
     getMonitoredRates.mockReturnValue(partialRates)
     formatText.mockReturnValue('Mock tweet text')
 
-    try {
-      await processRates()
-    } finally {
-      stopCronJob()
-    }
+    await processRates()
 
     expect(getRSS).toHaveBeenCalled()
     expect(parseXml).toHaveBeenCalled()
@@ -260,7 +248,6 @@ describe('Integration Tests', () => {
   it('should reject in production when twitter credentials are missing without leaking configured values', async () => {
     const {
       processRates,
-      stopCronJob,
       getRSS,
       parseXml,
       getMonitoredRates,
@@ -279,13 +266,9 @@ describe('Integration Tests', () => {
     getMonitoredRates.mockReturnValue(mockRates)
     formatText.mockReturnValue('Mock tweet text')
 
-    try {
-      await expect(processRates()).rejects.toThrow(
-        /KZT_TWITTER_ACCESS_TOKEN, KZT_TWITTER_ACCESS_TOKEN_SECRET/
-      )
-    } finally {
-      stopCronJob()
-    }
+    await expect(processRates()).rejects.toThrow(
+      /KZT_TWITTER_ACCESS_TOKEN, KZT_TWITTER_ACCESS_TOKEN_SECRET/
+    )
 
     const errorMessage = (console.error as jest.Mock).mock.calls
       .flat()
@@ -305,7 +288,6 @@ describe('Integration Tests', () => {
   it('should reject in production when twitter tweet creation fails', async () => {
     const {
       processRates,
-      stopCronJob,
       getRSS,
       parseXml,
       getMonitoredRates,
@@ -322,11 +304,7 @@ describe('Integration Tests', () => {
     formatText.mockReturnValue('Mock tweet text')
     mockTweet.mockRejectedValue(twitterError)
 
-    try {
-      await expect(processRates()).rejects.toThrow(twitterError)
-    } finally {
-      stopCronJob()
-    }
+    await expect(processRates()).rejects.toThrow(twitterError)
 
     expect(mockTweet).toHaveBeenCalledWith('Mock tweet text')
   })
@@ -334,7 +312,6 @@ describe('Integration Tests', () => {
   it('should log composed tweets instead of posting in debug mode outside test', async () => {
     const {
       processRates,
-      stopCronJob,
       getRSS,
       parseXml,
       getMonitoredRates,
@@ -350,11 +327,7 @@ describe('Integration Tests', () => {
     getMonitoredRates.mockReturnValue(mockRates)
     formatText.mockReturnValue('Mock tweet text')
 
-    try {
-      await processRates()
-    } finally {
-      stopCronJob()
-    }
+    await processRates()
 
     expect(mockTweet).not.toHaveBeenCalled()
     expect(console.info).toHaveBeenCalledWith('Composed tweet', 'Mock tweet text')
