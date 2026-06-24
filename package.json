@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@types/node": "^20.10.2",
-    "axios": "^1.8.4",
+    "axios": "^1.18.1",
     "cron": "^3.1.6",
     "dotenv": "^16.4.7",
     "fast-xml-parser": "^5.3.5",
@@ -38,7 +38,7 @@
     "ts-node": "^10.9.2"
   },
   "overrides": {
-    "form-data": "4.0.4",
+    "form-data": "4.0.6",
     "handlebars": "4.7.9"
   }
 }
