@@ -1,0 +1,20 @@
+docs/superpowers/specs/2026-07-28-sqlite-rate-history-design.md
+  s_cd588874af390e::t_ac14302b6fdd1f 130-131
+  s_cd588874af390e::t_0efd4e86f94236 1-129,132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "77b8de731ea2089b070ef63756efe43dd049872c",
+  "prompts": {},
+  "sessions": {
+    "s_cd588874af390e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa8bd-c77f-7d60-9f48-b590c7221c37",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    }
+  }
+}
