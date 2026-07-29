@@ -1,4 +1,5 @@
 import { CurrenciesMap, ChangeDirection, LocaleText } from './types'
+import { formatSignedChange } from './decimal'
 
 const determineChangeDirection = (change: string): ChangeDirection => {
   const changeValue = parseFloat(change)
@@ -24,11 +25,6 @@ const getChangeDirection = (currenciesMap: CurrenciesMap): ChangeDirection => {
   return 'no_change'
 }
 
-const formatNumber = (value: string): string => {
-  const num = parseFloat(value)
-  return Math.abs(num).toFixed(1)
-}
-
 export const formatText = (
   text: LocaleText['text'],
   currenciesMap: CurrenciesMap
@@ -43,9 +39,9 @@ export const formatText = (
 
   if (changeDirection !== 'no_change') {
     result = result
-      .replace('{RATE_CHANGE_USD}', formatNumber(currenciesMap.USD.change))
-      .replace('{RATE_CHANGE_RUB}', formatNumber(currenciesMap.RUB.change))
-      .replace('{RATE_CHANGE_EUR}', formatNumber(currenciesMap.EUR.change))
+      .replace('{RATE_CHANGE_USD}', formatSignedChange(currenciesMap.USD.change))
+      .replace('{RATE_CHANGE_RUB}', formatSignedChange(currenciesMap.RUB.change))
+      .replace('{RATE_CHANGE_EUR}', formatSignedChange(currenciesMap.EUR.change))
   }
 
   return result

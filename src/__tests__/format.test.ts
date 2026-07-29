@@ -3,20 +3,20 @@ import { CurrenciesMap } from '../types'
 
 describe('formatText', () => {
   const mockText = {
-    up: 'USD: {RATE_USD} (+{RATE_CHANGE_USD}), EUR: {RATE_EUR} (+{RATE_CHANGE_EUR})',
-    down: 'USD: {RATE_USD} (-{RATE_CHANGE_USD}), EUR: {RATE_EUR} (-{RATE_CHANGE_EUR})',
-    no_change: 'USD: {RATE_USD}, EUR: {RATE_EUR}'
+    up: 'USD: {RATE_USD} ({RATE_CHANGE_USD}), EUR: {RATE_EUR} ({RATE_CHANGE_EUR}), RUB: {RATE_RUB} ({RATE_CHANGE_RUB})',
+    down: 'USD: {RATE_USD} ({RATE_CHANGE_USD}), EUR: {RATE_EUR} ({RATE_CHANGE_EUR}), RUB: {RATE_RUB} ({RATE_CHANGE_RUB})',
+    no_change: 'USD: {RATE_USD}, EUR: {RATE_EUR}, RUB: {RATE_RUB}'
   }
 
-  it('should format text for upward trend', () => {
+  it('should preserve each currency change direction', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: '1.5' },
-      EUR: { amount: '480', change: '2.0' },
-      RUB: { amount: '5', change: '0' }
+      EUR: { amount: '480', change: '-2.25' },
+      RUB: { amount: '5', change: '0.01' }
     }
 
     const result = formatText(mockText, currenciesMap)
-    expect(result).toBe('USD: 450 (+1.5), EUR: 480 (+2.0)')
+    expect(result).toBe('USD: 450 (+1.5), EUR: 480 (-2.25), RUB: 5 (+0.01)')
   })
 
   it('should format text for downward trend', () => {
@@ -26,8 +26,10 @@ describe('formatText', () => {
       RUB: { amount: '5', change: '0' }
     }
 
-    const result = formatText(mockText, currenciesMap)
-    expect(result).toBe('USD: 450 (-1.5), EUR: 480 (-2.0)')
+    const downwardResult = formatText(mockText, currenciesMap)
+    expect(downwardResult).toBe(
+      'USD: 450 (-1.5), EUR: 480 (-2), RUB: 5 (0)'
+    )
   })
 
   it('should format text for no change', () => {
@@ -37,8 +39,8 @@ describe('formatText', () => {
       RUB: { amount: '5', change: '0' }
     }
 
-    const result = formatText(mockText, currenciesMap)
-    expect(result).toBe('USD: 450, EUR: 480')
+    const noChangeResult = formatText(mockText, currenciesMap)
+    expect(noChangeResult).toBe('USD: 450, EUR: 480, RUB: 5')
   })
 
   it('should handle invalid change values', () => {
@@ -48,8 +50,8 @@ describe('formatText', () => {
       RUB: { amount: '5', change: '0' }
     }
 
-    const result = formatText(mockText, currenciesMap)
-    expect(result).toBe('USD: 450, EUR: 480')
+    const invalidChangeResult = formatText(mockText, currenciesMap)
+    expect(invalidChangeResult).toBe('USD: 450, EUR: 480, RUB: 5')
   })
 
   it('should use USD as primary indicator for trend', () => {
@@ -59,8 +61,10 @@ describe('formatText', () => {
       RUB: { amount: '5', change: '0' }
     }
 
-    const result = formatText(mockText, currenciesMap)
-    expect(result).toBe('USD: 450 (+1.5), EUR: 480 (+2.0)')
+    const usdPrimaryResult = formatText(mockText, currenciesMap)
+    expect(usdPrimaryResult).toBe(
+      'USD: 450 (+1.5), EUR: 480 (-2), RUB: 5 (0)'
+    )
   })
 
   it('should check other currencies when USD has no change', () => {
@@ -70,7 +74,9 @@ describe('formatText', () => {
       RUB: { amount: '5', change: '0' }
     }
 
-    const result = formatText(mockText, currenciesMap)
-    expect(result).toBe('USD: 450 (+0.0), EUR: 480 (+2.0)')
+    const nonUsdFallbackResult = formatText(mockText, currenciesMap)
+    expect(nonUsdFallbackResult).toBe(
+      'USD: 450 (0), EUR: 480 (+2), RUB: 5 (0)'
+    )
   })
 })
