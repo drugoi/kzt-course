@@ -1,0 +1,40 @@
+README.md
+  s_cd588874af390e::t_950a1a3484b605 7
+src/__tests__/integration.test.ts
+  s_cd588874af390e::t_4c4142cc19c380 1,6,237-266,403-461,463
+  s_78fc3d443930a6::t_663f063cad9c03 462,464
+docs/superpowers/specs/2026-07-28-sqlite-rate-history-design.md
+  s_cd588874af390e::t_950a1a3484b605 32,128
+src/__tests__/format.test.ts
+  s_cd588874af390e::t_97eb7b5431deef 57-71
+package.json
+  s_cd588874af390e::t_950a1a3484b605 22
+src/format.ts
+  s_cd588874af390e::t_9d5ad2113b0733 2,5-11
+package-lock.json
+  s_cd588874af390e::t_e319902ba75d8a 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "b909439fa2e64e31116100493b32ef83adaa3235",
+  "prompts": {},
+  "sessions": {
+    "s_78fc3d443930a6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa805-0fe6-73d1-9830-134bc3c6c929",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    },
+    "s_cd588874af390e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa8bd-c77f-7d60-9f48-b590c7221c37",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    }
+  }
+}
