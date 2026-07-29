@@ -4,7 +4,7 @@ Twitter bot for posting Kazakhstan Tenge exchange-rate tweets.
 
 ## Prerequisites
 
-- Node.js 22.5+, matching the GitHub Actions CI environment.
+- Node.js 22.13.0+, matching the GitHub Actions CI environment.
 - Twitter API credentials for an account allowed to publish tweets.
 
 ## Setup

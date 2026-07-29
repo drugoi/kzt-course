@@ -1,9 +1,9 @@
-import { mkdtempSync, rmSync } from 'fs'
+import { mkdirSync, mkdtempSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
 import { RateHistory } from '../history'
-import { RateSnapshot, Rates } from '../types'
+import { LocaleText, RateSnapshot, Rates } from '../types'
 
 const mockTweet = jest.fn()
 const mockTwitterApi = jest.fn(() => ({
@@ -234,6 +234,36 @@ describe('Integration Tests', () => {
         RUB: { amount: '5.00', change: '-0.1' }
       })
       expect(console.warn).toHaveBeenCalledTimes(3)
+      expect(console.warn).toHaveBeenNthCalledWith(
+        1,
+        'RSS change differs from calculated history',
+        {
+          date: '2026-07-28',
+          currency: 'USD',
+          calculated: '1.5',
+          rss: '9'
+        }
+      )
+      expect(console.warn).toHaveBeenNthCalledWith(
+        2,
+        'RSS change differs from calculated history',
+        {
+          date: '2026-07-28',
+          currency: 'EUR',
+          calculated: '-2.25',
+          rss: '9'
+        }
+      )
+      expect(console.warn).toHaveBeenNthCalledWith(
+        3,
+        'RSS change differs from calculated history',
+        {
+          date: '2026-07-28',
+          currency: 'RUB',
+          calculated: '-0.1',
+          rss: '9'
+        }
+      )
     } finally {
       rmSync(directory, { recursive: true, force: true })
     }
@@ -367,6 +397,68 @@ describe('Integration Tests', () => {
     )
     expect(errorMessage).not.toContain('access-token')
     expect(errorMessage).not.toContain('access-token-secret')
+    expect(mockTweet).not.toHaveBeenCalled()
+  })
+
+  it('publishes distinct Kazakh and Russian tweets in that order', async () => {
+    const {
+      processRates,
+      getRSS,
+      parseXml,
+      getMonitoredRates,
+      formatText
+    } = await loadModules({
+      NODE_ENV: 'production',
+      DEBUG: 'false',
+      KZT_RATES_DB_FILE: testDatabase.database,
+      ...fullTwitterCredentials
+    })
+    getRSS.mockResolvedValue('mock xml')
+    parseXml.mockResolvedValue(currentRates)
+    getMonitoredRates.mockReturnValue(currentRates)
+    formatText.mockImplementation((text: LocaleText['text']) => {
+      if (text.up.includes('Курс өсуде!')) {
+        return 'Қазақша форматталған твит'
+      }
+      if (text.up.includes('Курс растет!')) {
+        return 'Отформатированный русский твит'
+      }
+      throw new Error('Unexpected locale text')
+    })
+    mockTweet.mockResolvedValue(undefined)
+
+    await processRates()
+
+    expect(mockTweet).toHaveBeenCalledTimes(2)
+    expect(mockTweet).toHaveBeenNthCalledWith(1, 'Қазақша форматталған твит')
+    expect(mockTweet).toHaveBeenNthCalledWith(
+      2,
+      'Отформатированный русский твит'
+    )
+  })
+
+  it('rejects a SQLite open failure before publishing in production', async () => {
+    mkdirSync(testDatabase.database)
+    const {
+      processRates,
+      getRSS,
+      parseXml,
+      getMonitoredRates,
+      formatText
+    } = await loadModules({
+      NODE_ENV: 'production',
+      DEBUG: 'false',
+      KZT_RATES_DB_FILE: testDatabase.database,
+      ...fullTwitterCredentials
+    })
+    getRSS.mockResolvedValue('mock xml')
+    parseXml.mockResolvedValue(currentRates)
+    getMonitoredRates.mockReturnValue(currentRates)
+    formatText.mockReturnValue('Mock tweet text')
+
+    await expect(processRates()).rejects.toThrow()
+
+    expect(formatText).not.toHaveBeenCalled()
     expect(mockTweet).not.toHaveBeenCalled()
   })
 

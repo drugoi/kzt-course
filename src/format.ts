@@ -1,12 +1,14 @@
 import { CurrenciesMap, ChangeDirection, LocaleText } from './types'
-import { formatSignedChange } from './decimal'
+import { formatSignedChange, normalizeDecimal } from './decimal'
 
 const determineChangeDirection = (change: string): ChangeDirection => {
-  const changeValue = parseFloat(change)
-  if (isNaN(changeValue)) return 'no_change'
-  if (changeValue > 0) return 'up'
-  if (changeValue < 0) return 'down'
-  return 'no_change'
+  try {
+    const normalizedChange = normalizeDecimal(change)
+    if (normalizedChange === '0') return 'no_change'
+    return normalizedChange.startsWith('-') ? 'down' : 'up'
+  } catch {
+    return 'no_change'
+  }
 }
 
 const getChangeDirection = (currenciesMap: CurrenciesMap): ChangeDirection => {

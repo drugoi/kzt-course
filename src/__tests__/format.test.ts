@@ -54,6 +54,21 @@ describe('formatText', () => {
     expect(invalidChangeResult).toBe('USD: 450, EUR: 480, RUB: 5')
   })
 
+  it('should preserve direction for an exact decimal that underflows to zero', () => {
+    const directionText = {
+      up: 'up',
+      down: 'down',
+      no_change: 'no change'
+    }
+    const currenciesMap: CurrenciesMap = {
+      USD: { amount: '450', change: `0.${'0'.repeat(323)}1` },
+      EUR: { amount: '480', change: '0' },
+      RUB: { amount: '5', change: '0' }
+    }
+
+    expect(formatText(directionText, currenciesMap)).toBe('up')
+  })
+
   it('should use USD as primary indicator for trend', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: '1.5' },

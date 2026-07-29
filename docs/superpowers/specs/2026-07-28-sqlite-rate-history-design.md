@@ -29,7 +29,7 @@ It will be replaced with SQLite history before release.
 ## SQLite Integration
 
 Use the built-in `node:sqlite` `DatabaseSync` API. The project and production
-runtime must use Node.js 22.5 or newer, and the Node.js type dependency must
+runtime must use Node.js 22.13.0 or newer, and the Node.js type dependency must
 match the supported runtime.
 
 The database path is configured with `KZT_RATES_DB_FILE`. Its default value is
@@ -125,7 +125,7 @@ indicator and falls back to EUR and RUB when USD is unchanged.
 
 ## Rollout
 
-1. Deploy with Node.js 22.5 or newer.
+1. Deploy with Node.js 22.13.0 or newer.
 2. Configure `KZT_RATES_DB_FILE` to a persistent absolute path.
 3. The first run with a valid complete RSS response creates the schema, uses
    RSS changes, and records the initial snapshot.
