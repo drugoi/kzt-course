@@ -18,8 +18,10 @@
     "type": "git",
     "url": "https://github.com/drugoi/kzt-course.git"
   },
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "dependencies": {
-    "@types/node": "^20.10.2",
     "axios": "^1.18.1",
     "cron": "^3.1.6",
     "dotenv": "^16.4.7",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
+    "@types/node": "^22.20.1",
     "@types/xml2json": "^0.11.6",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",

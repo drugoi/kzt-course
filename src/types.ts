@@ -3,11 +3,9 @@ interface Currency {
   change: string
 }
 
-export interface CurrenciesMap {
-  USD: Currency
-  RUB: Currency
-  EUR: Currency
-}
+export type CurrencyCode = 'USD' | 'EUR' | 'RUB'
+
+export type CurrenciesMap = Record<CurrencyCode, Currency>
 
 export interface Rate {
   title: string
@@ -20,6 +18,22 @@ export interface Rate {
 }
 
 export type Rates = Rate[]
+
+export interface StoredRate {
+  amount: string
+  rssChange: string
+}
+
+export interface RateSnapshot {
+  rateDate: string
+  rates: Record<CurrencyCode, StoredRate>
+}
+
+export interface ChangeMismatch {
+  currency: CurrencyCode
+  calculated: string
+  rss: string
+}
 
 export type ChangeDirection = 'up' | 'down' | 'no_change'
 
