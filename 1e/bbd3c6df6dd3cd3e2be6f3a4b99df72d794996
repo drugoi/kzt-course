@@ -1,0 +1,33 @@
+README.md
+  s_cd588874af390e::t_0dfb4c564950aa 39,42-49
+  s_cd588874af390e::t_d73653a9eea5e8 7
+  s_cd588874af390e::t_e1554ab45aa452 50
+src/index.ts
+  s_cd588874af390e::t_9a2d591ae1a6c9 11,140-141,147
+  s_cd588874af390e::t_1367561969daad 9,12-15,18,85,100-122,124,126-135,138-139,142-146
+.env.example
+  s_cd588874af390e::t_0dfb4c564950aa 9
+src/__tests__/integration.test.ts
+  s_cd588874af390e::t_876744b214aeb0 2-3,208,215-222,224-230,269,271
+  s_cd588874af390e::t_7136f74b76b68d 237,239-240,248-255,257,260-263,268
+  s_cd588874af390e::t_c1461def4e406c 1,5-6,33-40,48-66,69,72-74,78,81-83,87,90-92,123-124,129-130,135-136,142,147,153,161-162,174-207,210-214,223,231-236,238,242-247,256,258-259,264-267,270,276,291,309-310,318,342,350-351,373-402,416,420-421
+  s_cd588874af390e::t_815f6f768b6014 4
+.gitignore
+  s_cd588874af390e::t_cbc9cd50711dc0 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "1ebbd3c6df6dd3cd3e2be6f3a4b99df72d794996",
+  "prompts": {},
+  "sessions": {
+    "s_cd588874af390e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa8bd-c77f-7d60-9f48-b590c7221c37",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    }
+  }
+}
