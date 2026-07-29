@@ -29,8 +29,14 @@ export class RateHistory {
     if (path !== ':memory:') {
       mkdirSync(dirname(path), { recursive: true })
     }
-    this.database = new DatabaseSync(path)
-    this.database.exec(SCHEMA)
+    const database = new DatabaseSync(path)
+    try {
+      database.exec(SCHEMA)
+    } catch (error) {
+      database.close()
+      throw error
+    }
+    this.database = database
   }
 
   findPreviousSnapshot (beforeDate: string): RateSnapshot | null {

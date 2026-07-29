@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { DatabaseSync } from 'node:sqlite'
@@ -129,5 +129,17 @@ describe('RateHistory transaction boundaries', () => {
       .get() as { count: number }
     inspection.close()
     expect(row.count).toBe(0)
+  })
+
+  it('closes the database when schema initialization fails', () => {
+    writeFileSync(databasePath, 'not a SQLite database')
+    const closeSpy = jest.spyOn(DatabaseSync.prototype, 'close')
+
+    try {
+      expect(() => new RateHistory(databasePath)).toThrow()
+      expect(closeSpy).toHaveBeenCalledTimes(1)
+    } finally {
+      closeSpy.mockRestore()
+    }
   })
 })
