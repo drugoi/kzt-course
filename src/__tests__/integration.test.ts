@@ -1,4 +1,9 @@
-import { Rates } from '../types'
+import { mkdtempSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
+
+import { RateHistory } from '../history'
+import { RateSnapshot, Rates } from '../types'
 
 const mockTweet = jest.fn()
 const mockTwitterApi = jest.fn(() => ({
@@ -25,6 +30,14 @@ jest.mock('twitter-api-v2', () => ({
 const originalEnv = process.env
 type TestEnv = Record<string, string | undefined>
 
+const createTemporaryDatabasePath = () => {
+  const directory = mkdtempSync(join(tmpdir(), 'kzt-course-'))
+  return {
+    directory,
+    database: join(directory, 'rates.sqlite')
+  }
+}
+
 const fullTwitterCredentials = {
   KZT_TWITTER_CONSUMER_KEY: 'consumer-key',
   KZT_TWITTER_CONSUMER_SECRET: 'consumer-secret',
@@ -32,33 +45,51 @@ const fullTwitterCredentials = {
   KZT_TWITTER_ACCESS_TOKEN_SECRET: 'access-token-secret'
 }
 
-const mockRates: Rates = [
+const priorSnapshot: RateSnapshot = {
+  rateDate: '2026-07-27',
+  rates: {
+    USD: { amount: '448.50', rssChange: '-1' },
+    EUR: { amount: '482.25', rssChange: '-1' },
+    RUB: { amount: '5.10', rssChange: '-1' }
+  }
+}
+
+const currentSnapshot: RateSnapshot = {
+  rateDate: '2026-07-28',
+  rates: {
+    USD: { amount: '450.00', rssChange: '9' },
+    EUR: { amount: '480.00', rssChange: '9' },
+    RUB: { amount: '5.00', rssChange: '9' }
+  }
+}
+
+const currentRates: Rates = [
   {
     title: 'USD',
+    pubDate: '28.07.2026',
     description: '450.00',
-    change: '1.5',
-    pubDate: '2024-03-26',
     quant: '1',
-    index: 'USD',
-    link: 'http://example.com'
+    index: 'UP',
+    change: '9',
+    link: ''
   },
   {
     title: 'EUR',
+    pubDate: '28.07.2026',
     description: '480.00',
-    change: '2.0',
-    pubDate: '2024-03-26',
     quant: '1',
-    index: 'EUR',
-    link: 'http://example.com'
+    index: 'DOWN',
+    change: '9',
+    link: ''
   },
   {
     title: 'RUB',
+    pubDate: '28.07.2026',
     description: '5.00',
-    change: '0.0',
-    pubDate: '2024-03-26',
     quant: '1',
-    index: 'RUB',
-    link: 'http://example.com'
+    index: 'DOWN',
+    change: '9',
+    link: ''
   }
 ]
 
@@ -89,29 +120,37 @@ const loadModules = async (env: TestEnv = {}) => {
 }
 
 describe('Integration Tests', () => {
+  let testDatabase: ReturnType<typeof createTemporaryDatabasePath>
+
   // Store original console methods
   const originalConsole = {
     log: console.log,
     error: console.error,
-    info: console.info
+    info: console.info,
+    warn: console.warn
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockTweet.mockReset()
+    testDatabase = createTemporaryDatabasePath()
     process.env = { ...originalEnv }
     // Silence console methods
     console.log = jest.fn()
     console.error = jest.fn()
     console.info = jest.fn()
+    console.warn = jest.fn()
   })
 
   afterEach(() => {
     jest.clearAllMocks()
+    rmSync(testDatabase.directory, { recursive: true, force: true })
     process.env = originalEnv
     // Restore console methods
     console.log = originalConsole.log
     console.error = originalConsole.error
     console.info = originalConsole.info
+    console.warn = originalConsole.warn
   })
 
   it('should not process rates when importing the module', async () => {
@@ -119,7 +158,8 @@ describe('Integration Tests', () => {
     process.env = {
       ...originalEnv,
       NODE_ENV: 'test',
-      DEBUG: 'true'
+      DEBUG: 'true',
+      KZT_RATES_DB_FILE: testDatabase.database
     }
 
     const parse = await import('../parse')
@@ -131,32 +171,109 @@ describe('Integration Tests', () => {
     expect(parse.getRSS).not.toHaveBeenCalled()
   })
 
-  it('should process rates and generate tweets correctly', async () => {
-    const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
-      await loadModules()
-    // Mock RSS data
-    const mockXml = 'mock xml data'
-    getRSS.mockResolvedValue(mockXml)
-    parseXml.mockResolvedValue(mockRates)
-    getMonitoredRates.mockReturnValue(mockRates)
+  it('uses RSS changes and stores history on the first date', async () => {
+    const { directory, database } = createTemporaryDatabasePath()
+    try {
+      const {
+        processRates,
+        getRSS,
+        parseXml,
+        getMonitoredRates,
+        formatText
+      } = await loadModules({ KZT_RATES_DB_FILE: database })
+      getRSS.mockResolvedValue('mock xml')
+      parseXml.mockResolvedValue(currentRates)
+      getMonitoredRates.mockReturnValue(currentRates)
+      formatText.mockReturnValue('Mock tweet text')
 
-    // Mock formatted text
-    const mockFormattedText = 'Mock tweet text'
-    formatText.mockReturnValue(mockFormattedText)
+      await processRates()
 
-    // Process rates
-    await processRates()
+      expect(formatText).toHaveBeenCalledWith(expect.anything(), {
+        USD: { amount: '450.00', change: '9' },
+        EUR: { amount: '480.00', change: '9' },
+        RUB: { amount: '5.00', change: '9' }
+      })
 
-    // Verify the flow
-    expect(getRSS).toHaveBeenCalled()
-    expect(parseXml).toHaveBeenCalledWith(mockXml)
-    expect(getMonitoredRates).toHaveBeenCalledWith(mockRates)
-    expect(formatText).toHaveBeenCalled()
+      const history = new RateHistory(database)
+      try {
+        expect(history.findPreviousSnapshot('2026-07-29')).toEqual(
+          currentSnapshot
+        )
+      } finally {
+        history.close()
+      }
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('calculates changes from the prior complete date', async () => {
+    const { directory, database } = createTemporaryDatabasePath()
+    const seedHistory = new RateHistory(database)
+    seedHistory.saveSnapshot(priorSnapshot)
+    seedHistory.close()
+
+    try {
+      const {
+        processRates,
+        getRSS,
+        parseXml,
+        getMonitoredRates,
+        formatText
+      } = await loadModules({ KZT_RATES_DB_FILE: database })
+      getRSS.mockResolvedValue('mock xml')
+      parseXml.mockResolvedValue(currentRates)
+      getMonitoredRates.mockReturnValue(currentRates)
+      formatText.mockReturnValue('Mock tweet text')
+
+      await processRates()
+
+      expect(formatText).toHaveBeenCalledWith(expect.anything(), {
+        USD: { amount: '450.00', change: '1.5' },
+        EUR: { amount: '480.00', change: '-2.25' },
+        RUB: { amount: '5.00', change: '-0.1' }
+      })
+      expect(console.warn).toHaveBeenCalledTimes(3)
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
+  it('reprocessing one date still compares with the earlier date', async () => {
+    const { directory, database } = createTemporaryDatabasePath()
+    const seedHistory = new RateHistory(database)
+    seedHistory.saveSnapshot(priorSnapshot)
+    seedHistory.saveSnapshot(currentSnapshot)
+    seedHistory.close()
+
+    try {
+      const {
+        processRates,
+        getRSS,
+        parseXml,
+        getMonitoredRates,
+        formatText
+      } = await loadModules({ KZT_RATES_DB_FILE: database })
+      getRSS.mockResolvedValue('mock xml')
+      parseXml.mockResolvedValue(currentRates)
+      getMonitoredRates.mockReturnValue(currentRates)
+      formatText.mockReturnValue('Mock tweet text')
+
+      await processRates()
+
+      expect(formatText).toHaveBeenCalledWith(expect.anything(), {
+        USD: { amount: '450.00', change: '1.5' },
+        EUR: { amount: '480.00', change: '-2.25' },
+        RUB: { amount: '5.00', change: '-0.1' }
+      })
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 
   it('should handle errors gracefully', async () => {
     const { processRates, getRSS, parseXml, getMonitoredRates } =
-      await loadModules()
+      await loadModules({ KZT_RATES_DB_FILE: testDatabase.database })
     // Mock RSS to throw error
     const error = new Error('RSS Error')
     getRSS.mockRejectedValue(error)
@@ -171,7 +288,7 @@ describe('Integration Tests', () => {
 
   it('should handle empty rates gracefully', async () => {
     const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
-      await loadModules()
+      await loadModules({ KZT_RATES_DB_FILE: testDatabase.database })
     // Mock empty rates
     getRSS.mockResolvedValue('mock xml')
     parseXml.mockResolvedValue([])
@@ -189,41 +306,8 @@ describe('Integration Tests', () => {
   })
 
   it.each([
-    [
-      [
-        {
-          title: 'USD',
-          description: '450.00',
-          change: '1.5',
-          pubDate: '2024-03-26',
-          quant: '1',
-          index: 'USD',
-          link: 'http://example.com'
-        }
-      ]
-    ],
-    [
-      [
-        {
-          title: 'USD',
-          description: '450.00',
-          change: '1.5',
-          pubDate: '2024-03-26',
-          quant: '1',
-          index: 'USD',
-          link: 'http://example.com'
-        },
-        {
-          title: 'EUR',
-          description: '480.00',
-          change: '2.0',
-          pubDate: '2024-03-26',
-          quant: '1',
-          index: 'EUR',
-          link: 'http://example.com'
-        }
-      ]
-    ]
+    [currentRates.slice(0, 1)],
+    [currentRates.slice(0, 2)]
   ])('should not format tweets when monitored rates are partial', async (partialRates: Rates) => {
     const {
       processRates,
@@ -231,7 +315,7 @@ describe('Integration Tests', () => {
       parseXml,
       getMonitoredRates,
       formatText
-    } = await loadModules()
+    } = await loadModules({ KZT_RATES_DB_FILE: testDatabase.database })
     getRSS.mockResolvedValue('mock xml')
     parseXml.mockResolvedValue(partialRates)
     getMonitoredRates.mockReturnValue(partialRates)
@@ -255,6 +339,7 @@ describe('Integration Tests', () => {
     } = await loadModules({
       NODE_ENV: 'production',
       DEBUG: 'false',
+      KZT_RATES_DB_FILE: testDatabase.database,
       KZT_TWITTER_CONSUMER_KEY: fullTwitterCredentials.KZT_TWITTER_CONSUMER_KEY,
       KZT_TWITTER_CONSUMER_SECRET:
         fullTwitterCredentials.KZT_TWITTER_CONSUMER_SECRET,
@@ -262,8 +347,8 @@ describe('Integration Tests', () => {
       KZT_TWITTER_ACCESS_TOKEN_SECRET: ''
     })
     getRSS.mockResolvedValue('mock xml')
-    parseXml.mockResolvedValue(mockRates)
-    getMonitoredRates.mockReturnValue(mockRates)
+    parseXml.mockResolvedValue(currentRates)
+    getMonitoredRates.mockReturnValue(currentRates)
     formatText.mockReturnValue('Mock tweet text')
 
     await expect(processRates()).rejects.toThrow(
@@ -285,28 +370,36 @@ describe('Integration Tests', () => {
     expect(mockTweet).not.toHaveBeenCalled()
   })
 
-  it('should reject in production when twitter tweet creation fails', async () => {
-    const {
-      processRates,
-      getRSS,
-      parseXml,
-      getMonitoredRates,
-      formatText
-    } = await loadModules({
-      NODE_ENV: 'production',
-      DEBUG: 'false',
-      ...fullTwitterCredentials
-    })
-    const twitterError = new Error('twitter unavailable')
-    getRSS.mockResolvedValue('mock xml')
-    parseXml.mockResolvedValue(mockRates)
-    getMonitoredRates.mockReturnValue(mockRates)
-    formatText.mockReturnValue('Mock tweet text')
-    mockTweet.mockRejectedValue(twitterError)
+  it('stores history before a Twitter publication failure', async () => {
+    const { directory, database } = createTemporaryDatabasePath()
 
-    await expect(processRates()).rejects.toThrow(twitterError)
+    try {
+      const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
+        await loadModules({
+          NODE_ENV: 'production',
+          DEBUG: 'false',
+          KZT_RATES_DB_FILE: database,
+          ...fullTwitterCredentials
+        })
+      getRSS.mockResolvedValue('mock xml')
+      parseXml.mockResolvedValue(currentRates)
+      getMonitoredRates.mockReturnValue(currentRates)
+      formatText.mockReturnValue('Mock tweet text')
+      mockTweet.mockRejectedValue(new Error('twitter unavailable'))
 
-    expect(mockTweet).toHaveBeenCalledWith('Mock tweet text')
+      await expect(processRates()).rejects.toThrow('twitter unavailable')
+
+      const history = new RateHistory(database)
+      try {
+        expect(history.findPreviousSnapshot('2026-07-29')).toEqual(
+          currentSnapshot
+        )
+      } finally {
+        history.close()
+      }
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
   })
 
   it('should log composed tweets instead of posting in debug mode outside test', async () => {
@@ -320,11 +413,12 @@ describe('Integration Tests', () => {
       NODE_ENV: 'development',
       DEBUG: 'true',
       FORCE_UPDATE: 'true',
+      KZT_RATES_DB_FILE: testDatabase.database,
       ...fullTwitterCredentials
     })
     getRSS.mockResolvedValue('mock xml')
-    parseXml.mockResolvedValue(mockRates)
-    getMonitoredRates.mockReturnValue(mockRates)
+    parseXml.mockResolvedValue(currentRates)
+    getMonitoredRates.mockReturnValue(currentRates)
     formatText.mockReturnValue('Mock tweet text')
 
     await processRates()

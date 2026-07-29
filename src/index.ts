@@ -6,13 +6,18 @@ import { CronJob } from 'cron'
 import { TwitterApi, TwitterApiTokens } from 'twitter-api-v2'
 
 import { formatText } from './format'
+import { RateHistory } from './history'
 import { getMonitoredRates, getRSS, parseXml } from './parse'
+import {
+  createCurrenciesMap,
+  createRateSnapshot,
+  findChangeMismatches
+} from './rates'
 import tweetsRU from './locales/ru.json'
 import tweetsKK from './locales/kk.json'
-import { CurrenciesMap, Rates, LocaleText } from './types'
+import { CurrenciesMap, LocaleText } from './types'
 
 let twitterClient: TwitterApi | null = null
-const REQUIRED_CURRENCIES: Array<keyof CurrenciesMap> = ['USD', 'EUR', 'RUB']
 
 const getRequiredTwitterCredential = (
   name: string,
@@ -77,35 +82,7 @@ const sendTweet = async (tweet: string) => {
   await getTwitterClient().v2.tweet(tweet)
 }
 
-const hasRequiredCurrencies = (
-  currenciesMap: Partial<CurrenciesMap>
-): currenciesMap is CurrenciesMap =>
-  REQUIRED_CURRENCIES.every((currency) => Boolean(currenciesMap[currency]))
-
-const generateTweet = (rates: Rates) => {
-  const currenciesMap = rates.reduce<Partial<CurrenciesMap>>((acc, rate) => {
-    if (
-      REQUIRED_CURRENCIES.includes(rate.title as keyof CurrenciesMap) &&
-      rate.description.trim()
-    ) {
-      acc[rate.title as keyof CurrenciesMap] = {
-        amount: rate.description,
-        change: rate.change
-      }
-    }
-    return acc
-  }, {})
-
-  const missingCurrencies = REQUIRED_CURRENCIES.filter(
-    (currency) => !currenciesMap[currency]
-  )
-
-  if (!hasRequiredCurrencies(currenciesMap)) {
-    throw new Error(
-      `Missing monitored currency rates: ${missingCurrencies.join(', ')}`
-    )
-  }
-
+const generateTweet = (currenciesMap: CurrenciesMap) => {
   const tweetRU = formatText((tweetsRU as LocaleText).text, currenciesMap)
   const tweetKK = formatText((tweetsKK as LocaleText).text, currenciesMap)
 
@@ -120,22 +97,54 @@ export const processRates = async () => {
     const xmlRates = await getRSS()
     const parsedRates = await parseXml(xmlRates)
     const monitoredRates = getMonitoredRates(parsedRates)
+    const currentSnapshot = createRateSnapshot(monitoredRates)
+    const history = new RateHistory()
 
-    const { tweetKK, tweetRU } = generateTweet(monitoredRates)
+    try {
+      const previousSnapshot = history.findPreviousSnapshot(
+        currentSnapshot.rateDate
+      )
+      const currenciesMap = createCurrenciesMap(
+        currentSnapshot,
+        previousSnapshot
+      )
 
-    if (
-      process.env.FORCE_UPDATE === 'true' ||
-      process.env.NODE_ENV === 'production'
-    ) {
-      await sendTweet(tweetKK)
-      await sendTweet(tweetRU)
-    } else {
-      if (process.env.NODE_ENV !== 'test') {
+      if (previousSnapshot) {
+        for (const mismatch of findChangeMismatches(
+          currentSnapshot,
+          currenciesMap
+        )) {
+          console.warn('RSS change differs from calculated history', {
+            date: currentSnapshot.rateDate,
+            ...mismatch
+          })
+        }
+      }
+
+      history.saveSnapshot(currentSnapshot)
+
+      const { tweetKK, tweetRU } = generateTweet(currenciesMap)
+
+      const shouldPublish =
+        process.env.FORCE_UPDATE === 'true' ||
+        process.env.NODE_ENV === 'production'
+
+      if (shouldPublish) {
+        await sendTweet(tweetKK)
+        await sendTweet(tweetRU)
+      } else if (process.env.NODE_ENV !== 'test') {
         console.log('🚀 ~ tweetKK, tweetRU', { tweetKK, tweetRU })
       }
-      if (process.env.NODE_ENV !== 'test') {
-        process.exit()
-      }
+    } finally {
+      history.close()
+    }
+
+    if (
+      process.env.FORCE_UPDATE !== 'true' &&
+      process.env.NODE_ENV !== 'production' &&
+      process.env.NODE_ENV !== 'test'
+    ) {
+      process.exit()
     }
   } catch (error) {
     if (process.env.NODE_ENV !== 'test') {

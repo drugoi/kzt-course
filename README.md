@@ -4,7 +4,7 @@ Twitter bot for posting Kazakhstan Tenge exchange-rate tweets.
 
 ## Prerequisites
 
-- Node.js 22, matching the GitHub Actions CI environment.
+- Node.js 22.5+, matching the GitHub Actions CI environment.
 - Twitter API credentials for an account allowed to publish tweets.
 
 ## Setup
@@ -36,7 +36,17 @@ Optional runtime flags are also listed in `.env.example`:
 NODE_ENV=development
 DEBUG=false
 FORCE_UPDATE=false
+KZT_RATES_DB_FILE=
 ```
+
+Rate history lives in `data/rates.sqlite` by default. In production, set
+`KZT_RATES_DB_FILE` to an absolute persistent path if runtime data should live
+outside the deployment directory. The configured location must persist across
+restarts and deployments.
+
+The first stored date uses the RSS `<change>` values. For later dates, the bot
+calculates changes from the latest complete earlier snapshot of USD, EUR, and
+RUB rates.
 
 ## Commands
 
