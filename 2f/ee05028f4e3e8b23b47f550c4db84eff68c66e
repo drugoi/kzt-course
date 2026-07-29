@@ -1,0 +1,22 @@
+src/__tests__/history.test.ts
+  s_cd588874af390e::t_d69d5df308b7a0 1,133-143
+  s_cd588874af390e::t_b6b16b4e9a4ac1 144
+src/history.ts
+  s_cd588874af390e::t_9b8ebe00acda38 32-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "2fee05028f4e3e8b23b47f550c4db84eff68c66e",
+  "prompts": {},
+  "sessions": {
+    "s_cd588874af390e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa8bd-c77f-7d60-9f48-b590c7221c37",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    }
+  }
+}
