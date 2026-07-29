@@ -1,0 +1,43 @@
+src/types.ts
+  s_cd588874af390e::t_4f108ac8d2ef1b 6-8,22-36
+  s_78fc3d443930a6::t_2d5766c260c891 37
+src/history.ts
+  s_cd588874af390e::t_216a83c624b8e4 28,36,87,118
+  s_cd588874af390e::t_130dc40c02c7af 1-27,29-35,37-86,88-117,119-121
+src/__tests__/rates.test.ts
+  s_cd588874af390e::t_19378fa9b3d82e 1-83
+package.json
+  s_cd588874af390e::t_4f108ac8d2ef1b 21-23
+  s_78fc3d443930a6::t_c596e5fdae35c1 34
+src/rates.ts
+  s_cd588874af390e::t_4f108ac8d2ef1b 1-81,85-98
+  s_cd588874af390e::t_216a83c624b8e4 82-84
+src/__tests__/history.test.ts
+  s_cd588874af390e::t_fff1c92aad6f9e 1-133
+package-lock.json
+  s_cd588874af390e::t_f421abc4ab2766 21,33-35,1355-1359,1361,7745-7749,9022-9025,9027,13617-13620
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "a09198e9b54b2aff4d46b304e7c050a0943dd4f4",
+  "prompts": {},
+  "sessions": {
+    "s_78fc3d443930a6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa805-0fe6-73d1-9830-134bc3c6c929",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    },
+    "s_cd588874af390e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa8bd-c77f-7d60-9f48-b590c7221c37",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    }
+  }
+}
