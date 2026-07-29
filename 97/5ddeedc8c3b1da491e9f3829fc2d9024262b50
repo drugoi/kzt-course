@@ -1,0 +1,29 @@
+src/__tests__/decimal.test.ts
+  s_cd588874af390e::t_e168ce6f2f5afa 1-38
+src/locales/kk.json
+  s_cd588874af390e::t_a7fbd0c6bdd4b5 3-4,7
+src/locales/ru.json
+  s_cd588874af390e::t_a7fbd0c6bdd4b5 3-4,7
+src/decimal.ts
+  s_cd588874af390e::t_ea347aeedf936b 1-82
+src/__tests__/format.test.ts
+  s_cd588874af390e::t_c82a9ba05ef8d0 6-8,11,14-15,19,29-32,42-43,53-54,64-67,77-80
+src/format.ts
+  s_cd588874af390e::t_a7fbd0c6bdd4b5 2,42-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "975ddeedc8c3b1da491e9f3829fc2d9024262b50",
+  "prompts": {},
+  "sessions": {
+    "s_cd588874af390e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa8bd-c77f-7d60-9f48-b590c7221c37",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "Nikita Bayev <nikita@bayev.kz>"
+    }
+  }
+}
