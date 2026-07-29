@@ -3,6 +3,54 @@ import { Rates } from '../types'
 
 describe('parse.ts', () => {
   describe('parseXml', () => {
+    it('should preserve signed change and publication date from RSS', async () => {
+      const xml = `
+        <rss>
+          <channel>
+            <item>
+              <title>USD</title>
+              <pubDate>28.07.2026</pubDate>
+              <description>473.4</description>
+              <quant>1</quant>
+              <index>DOWN</index>
+              <change>-2.67</change>
+              <link></link>
+            </item>
+          </channel>
+        </rss>
+      `
+
+      await expect(parseXml(xml)).resolves.toEqual([
+        {
+          title: 'USD',
+          pubDate: '28.07.2026',
+          description: '473.4',
+          quant: '1',
+          index: 'DOWN',
+          change: '-2.67',
+          link: ''
+        }
+      ])
+    })
+
+    it('should not fabricate a zero change when RSS omits change', async () => {
+      const xml = `
+        <rss>
+          <channel>
+            <item>
+              <title>USD</title>
+              <pubDate>28.07.2026</pubDate>
+              <description>473.4</description>
+            </item>
+          </channel>
+        </rss>
+      `
+
+      const [rate] = await parseXml(xml)
+
+      expect(rate.change).toBe('')
+    })
+
     it('should parse valid XML data', async () => {
       const mockXml = `
         <?xml version="1.0" encoding="UTF-8"?>
@@ -31,8 +79,12 @@ describe('parse.ts', () => {
       expect(result).toHaveLength(3)
       expect(result[0]).toEqual({
         title: 'USD',
+        pubDate: '',
         description: '450.00',
-        change: '1.5'
+        quant: '',
+        index: '',
+        change: '1.5',
+        link: ''
       })
     })
 

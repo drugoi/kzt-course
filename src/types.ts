@@ -9,14 +9,14 @@ export interface CurrenciesMap {
   EUR: Currency
 }
 
-interface Rate {
+export interface Rate {
   title: string
   pubDate: string
   description: string
   quant: string
-  index: any
+  index: string
   change: string
-  link: any
+  link: string
 }
 
 export type Rates = Rate[]
