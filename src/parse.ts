@@ -36,7 +36,7 @@ export const parseXml = async (xml: string): Promise<Rates> => {
       change: toText(rate?.change),
       link: toText(rate?.link)
     }))
-  } catch (error) {
+  } catch {
     throw new Error('Failed to parse XML')
   }
 }
