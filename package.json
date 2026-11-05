@@ -43,6 +43,9 @@
   },
   "overrides": {
     "form-data": "4.0.6",
-    "handlebars": "4.7.9"
+    "handlebars": "4.7.10",
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.4"
+    }
   }
 }
