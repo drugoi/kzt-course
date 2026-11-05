@@ -21,15 +21,21 @@ Create a local environment file:
 cp .env.example .env
 ```
 
-Fill `.env` with the Buffer key and the ID of the connected X channel:
+Fill `.env` with the Buffer key and the IDs of the connected X and Threads channels:
 
 ```sh
 BUFFER_API_KEY=
-BUFFER_CHANNEL_ID=
+BUFFER_CHANNEL_IDS=
 ```
 
 With `BUFFER_API_KEY` set, posts go through Buffer using `shareNow` at the
 existing daily 09:00 Asia/Almaty schedule, Kazakh first and Russian second.
+Channel IDs are comma-separated and deduplicated. Each channel receives Kazakh
+then Russian; a failed post does not block remaining posts or channels. Partial
+failures are reported after all deliveries have been attempted. Successful posts
+are not automatically retried. The legacy `BUFFER_CHANNEL_ID` setting is supported
+when `BUFFER_CHANNEL_IDS` is unset.
+
 The bot does not publish automatically on production startup. Buffer failures
 never fall back to the paid X API. Accepted post IDs are logged; acceptance
 by Buffer is not confirmation of final delivery to X. The Free queue limit

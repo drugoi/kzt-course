@@ -18,11 +18,10 @@ interface BufferResponse {
   }
 }
 
-export const sendBufferPost = async (text: string): Promise<void> => {
+const sendBufferPost = async (text: string, channelId: string): Promise<void> => {
   const apiKey = process.env.BUFFER_API_KEY?.trim()
-  const channelId = process.env.BUFFER_CHANNEL_ID?.trim()
   if (!apiKey || !channelId) {
-    throw new Error('Buffer requires BUFFER_API_KEY and BUFFER_CHANNEL_ID')
+    throw new Error('Buffer requires an API key and channel ID')
   }
 
   let response: Response
@@ -58,5 +57,26 @@ export const sendBufferPost = async (text: string): Promise<void> => {
   if (result?.errors?.length || post?.__typename !== 'PostActionSuccess' || !post.post?.id) {
     throw new Error('Buffer rejected publication; check channel access and posting limits')
   }
-  console.info('Buffer accepted post', post.post.id)
+  console.info('Buffer accepted post', { channelId, postId: post.post.id })
+}
+
+export const sendBufferPosts = async (texts: string[]): Promise<void> => {
+  const configured = process.env.BUFFER_CHANNEL_IDS ?? process.env.BUFFER_CHANNEL_ID ?? ''
+  const channels = [...new Set(configured.split(',').map(id => id.trim()).filter(Boolean))]
+  if (!channels.length) {
+    throw new Error('Buffer requires BUFFER_CHANNEL_IDS or BUFFER_CHANNEL_ID')
+  }
+  const failures: string[] = []
+  for (const channelId of channels) {
+    for (const text of texts) {
+      try {
+        await sendBufferPost(text, channelId)
+      } catch (error) {
+        failures.push(error instanceof Error ? error.message : 'Unknown Buffer failure')
+      }
+    }
+  }
+  if (failures.length) {
+    throw new Error(`Buffer failed to publish ${failures.length} of ${channels.length * texts.length} posts: ${failures.join('; ')}`)
+  }
 }

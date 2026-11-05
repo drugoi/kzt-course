@@ -436,6 +436,42 @@ describe('Integration Tests', () => {
     } finally { fetchSpy.mockRestore() }
   })
 
+  it.each([false, true])('publishes both languages to all channels despite a partial failure (%s)', async (failFirst) => {
+    const requests: Array<Record<string, unknown>> = []
+    const fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(async (_url, options) => {
+      requests.push(JSON.parse(String(options?.body)).variables.input)
+      const createPost = failFirst && requests.length === 1
+        ? { __typename: 'MutationError', message: 'disconnected' }
+        : { __typename: 'PostActionSuccess', post: { id: 'post-id' } }
+      return new Response(JSON.stringify({ data: { createPost } }), { status: 200 })
+    })
+    try {
+      const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
+        await loadModules({
+          NODE_ENV: 'production',
+          DEBUG: 'false',
+          BUFFER_API_KEY: 'buffer-secret',
+          BUFFER_CHANNEL_ID: 'legacy-channel',
+          BUFFER_CHANNEL_IDS: ' twitter-channel, threads-channel, twitter-channel ',
+          KZT_RATES_DB_FILE: testDatabase.database,
+          ...fullTwitterCredentials
+        })
+      getRSS.mockResolvedValue('mock xml')
+      parseXml.mockResolvedValue(currentRates)
+      getMonitoredRates.mockReturnValue(currentRates)
+      formatText.mockReturnValueOnce('Russian').mockReturnValueOnce('Kazakh')
+      if (failFirst) await expect(processRates()).rejects.toThrow(/Buffer/)
+      else await processRates()
+      expect(requests.map(({ channelId, text }) => ({ channelId, text }))).toEqual([
+        { channelId: 'twitter-channel', text: 'Kazakh' },
+        { channelId: 'twitter-channel', text: 'Russian' },
+        { channelId: 'threads-channel', text: 'Kazakh' },
+        { channelId: 'threads-channel', text: 'Russian' }
+      ])
+      expect(mockTweet).not.toHaveBeenCalled()
+    } finally { fetchSpy.mockRestore() }
+  })
+
   it.each([
     [401, {}],
     [200, { errors: [{ message: 'secret must not be logged' }] }],

@@ -5,7 +5,7 @@ dotenv.config()
 import { CronJob } from 'cron'
 import { TwitterApi, TwitterApiTokens } from 'twitter-api-v2'
 
-import { sendBufferPost } from './buffer'
+import { sendBufferPosts } from './buffer'
 import { formatText } from './format'
 import { RateHistory } from './history'
 import { getMonitoredRates, getRSS, parseXml } from './parse'
@@ -80,11 +80,6 @@ const sendTweet = async (tweet: string) => {
     return console.info('Composed tweet', tweet)
   }
 
-  if (process.env.BUFFER_API_KEY?.trim()) {
-    await sendBufferPost(tweet)
-    return
-  }
-
   await getTwitterClient().v2.tweet(tweet)
 }
 
@@ -137,8 +132,15 @@ export const processRates = async () => {
 
       if (shouldPublish) {
         try {
-          await sendTweet(tweetKK)
-          await sendTweet(tweetRU)
+          if (
+            process.env.BUFFER_API_KEY?.trim() &&
+            !(process.env.DEBUG === 'true' && process.env.NODE_ENV !== 'test')
+          ) {
+            await sendBufferPosts([tweetKK, tweetRU])
+          } else {
+            await sendTweet(tweetKK)
+            await sendTweet(tweetRU)
+          }
         } catch (error) {
           if (
             typeof error === 'object' && error !== null &&
