@@ -5,7 +5,7 @@ Twitter bot for posting Kazakhstan Tenge exchange-rate tweets.
 ## Prerequisites
 
 - Node.js 22.13.0+, matching the GitHub Actions CI environment.
-- Twitter API credentials for an account allowed to publish tweets.
+- A Buffer account with the project X channel connected and a personal API key.
 
 ## Setup
 
@@ -21,14 +21,22 @@ Create a local environment file:
 cp .env.example .env
 ```
 
-Fill `.env` with the required Twitter credentials:
+Fill `.env` with the Buffer key and the ID of the connected X channel:
 
 ```sh
-KZT_TWITTER_ACCESS_TOKEN=
-KZT_TWITTER_ACCESS_TOKEN_SECRET=
-KZT_TWITTER_CONSUMER_KEY=
-KZT_TWITTER_CONSUMER_SECRET=
+BUFFER_API_KEY=
+BUFFER_CHANNEL_ID=
 ```
+
+With `BUFFER_API_KEY` set, posts go through Buffer using `shareNow` at the
+existing daily 09:00 Asia/Almaty schedule, Kazakh first and Russian second.
+The bot does not publish automatically on production startup. Buffer failures
+never fall back to the paid X API. Accepted post IDs are logged; acceptance
+by Buffer is not confirmation of final delivery to X. The Free queue limit
+is concurrent, not a monthly publication limit.
+
+Without a Buffer key, legacy direct X API credentials in `.env.example` are
+still supported. To migrate back, remove the Buffer key explicitly.
 
 Optional runtime flags are also listed in `.env.example`:
 
@@ -60,5 +68,4 @@ npm run lint
 ## Security
 
 Never commit `.env` or any real credential values. If a credential is exposed in
-git, logs, issue trackers, or shared documentation, rotate the affected Twitter
-credential immediately.
+git, logs, issue trackers, or shared documentation, rotate the affected credential immediately.

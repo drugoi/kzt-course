@@ -5,6 +5,7 @@ dotenv.config()
 import { CronJob } from 'cron'
 import { TwitterApi, TwitterApiTokens } from 'twitter-api-v2'
 
+import { sendBufferPost } from './buffer'
 import { formatText } from './format'
 import { RateHistory } from './history'
 import { getMonitoredRates, getRSS, parseXml } from './parse'
@@ -77,6 +78,11 @@ const getTwitterClient = () => {
 const sendTweet = async (tweet: string) => {
   if (process.env.DEBUG === 'true' && process.env.NODE_ENV !== 'test') {
     return console.info('Composed tweet', tweet)
+  }
+
+  if (process.env.BUFFER_API_KEY?.trim()) {
+    await sendBufferPost(tweet)
+    return
   }
 
   await getTwitterClient().v2.tweet(tweet)
@@ -185,7 +191,7 @@ export const stopCronJob = () => {
 }
 
 export const startBot = (): BotRuntime => {
-  if (process.env.KZT_TWITTER_CONSUMER_KEY) {
+  if (process.env.BUFFER_API_KEY?.trim() || process.env.KZT_TWITTER_CONSUMER_KEY) {
     job = CronJob.from({
       cronTime: '00 09 * * *',
       onTick: async () => {

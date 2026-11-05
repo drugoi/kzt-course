@@ -400,6 +400,86 @@ describe('Integration Tests', () => {
     expect(mockTweet).not.toHaveBeenCalled()
   })
 
+  it('publishes both languages through Buffer without calling the paid X API', async () => {
+    const requests: Array<Record<string, unknown>> = []
+    const fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(async (_url, options) => {
+      const body = JSON.parse(String(options?.body))
+      requests.push(body.variables.input)
+      return new Response(JSON.stringify({
+        data: {
+          createPost: {
+            __typename: 'PostActionSuccess', post: { id: 'post-id' }
+          }
+        }
+      }), { status: 200 })
+    })
+    try {
+      const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
+        await loadModules({
+          NODE_ENV: 'production',
+          DEBUG: 'false',
+          BUFFER_API_KEY: 'buffer-secret',
+          BUFFER_CHANNEL_ID: 'twitter-channel',
+          KZT_RATES_DB_FILE: testDatabase.database,
+          ...fullTwitterCredentials
+        })
+      getRSS.mockResolvedValue('mock xml')
+      parseXml.mockResolvedValue(currentRates)
+      getMonitoredRates.mockReturnValue(currentRates)
+      formatText.mockReturnValueOnce('Russian').mockReturnValueOnce('Kazakh')
+      await processRates()
+      expect(requests).toEqual([
+        { channelId: 'twitter-channel', text: 'Kazakh', schedulingType: 'automatic', mode: 'shareNow' },
+        { channelId: 'twitter-channel', text: 'Russian', schedulingType: 'automatic', mode: 'shareNow' }
+      ])
+      expect(mockTweet).not.toHaveBeenCalled()
+    } finally { fetchSpy.mockRestore() }
+  })
+
+  it.each([
+    [401, {}],
+    [200, { errors: [{ message: 'secret must not be logged' }] }],
+    [200, { data: { createPost: { __typename: 'MutationError', message: 'secret must not be logged' } } }]
+  ])('does not fall back to paid X publishing when Buffer fails (%s)', async (status, body) => {
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify(body), { status })
+    )
+    try {
+      const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
+        await loadModules({
+          NODE_ENV: 'production',
+          DEBUG: 'false',
+          BUFFER_API_KEY: 'buffer-secret',
+          BUFFER_CHANNEL_ID: 'twitter-channel',
+          KZT_RATES_DB_FILE: testDatabase.database,
+          ...fullTwitterCredentials
+        })
+      getRSS.mockResolvedValue('mock xml')
+      parseXml.mockResolvedValue(currentRates)
+      getMonitoredRates.mockReturnValue(currentRates)
+      formatText.mockReturnValue('tweet')
+      await expect(processRates()).rejects.toThrow(/Buffer/)
+      expect(mockTweet).not.toHaveBeenCalled()
+      expect(String((console.error as jest.Mock).mock.calls)).not.toContain('secret')
+    } finally { fetchSpy.mockRestore() }
+  })
+
+  it('starts the daily schedule with Buffer credentials alone', async () => {
+    const { startBot } = await loadModules({
+      NODE_ENV: 'production',
+      DEBUG: 'false',
+      FORCE_UPDATE: 'false',
+      BUFFER_API_KEY: 'buffer-secret',
+      BUFFER_CHANNEL_ID: 'twitter-channel',
+      KZT_TWITTER_CONSUMER_KEY: ''
+    })
+    const runtime = startBot()
+    try {
+      expect(runtime.job).not.toBeNull()
+      expect(runtime.initialRun).toBeNull()
+    } finally { runtime.stop() }
+  })
+
   it('publishes distinct Kazakh and Russian tweets in that order', async () => {
     const {
       processRates,
