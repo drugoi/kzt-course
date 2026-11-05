@@ -462,6 +462,37 @@ describe('Integration Tests', () => {
     expect(mockTweet).not.toHaveBeenCalled()
   })
 
+  it.each([1, 2])('survives Twitter 402 on publication %s and resumes on the next run', async (failedPublication) => {
+    const { processRates, getRSS, parseXml, getMonitoredRates, formatText } =
+      await loadModules({
+        NODE_ENV: 'production',
+        DEBUG: 'false',
+        KZT_RATES_DB_FILE: testDatabase.database,
+        ...fullTwitterCredentials
+      })
+    getRSS.mockResolvedValue('mock xml')
+    parseXml.mockResolvedValue(currentRates)
+    getMonitoredRates.mockReturnValue(currentRates)
+    formatText.mockReturnValue('Mock tweet text')
+    if (failedPublication === 2) mockTweet.mockResolvedValueOnce(undefined)
+    mockTweet.mockRejectedValueOnce(Object.assign(new Error('Payment Required'), {
+      code: 402, data: { detail: 'credits depleted' }
+    }))
+
+    await expect(processRates()).resolves.toBeUndefined()
+    expect(mockTweet).toHaveBeenCalledTimes(failedPublication)
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('402'))
+    expect(console.error).not.toHaveBeenCalled()
+    const history = new RateHistory(testDatabase.database)
+    try {
+      expect(history.findPreviousSnapshot('2026-07-29')).toEqual(currentSnapshot)
+    } finally { history.close() }
+
+    mockTweet.mockResolvedValue(undefined)
+    await expect(processRates()).resolves.toBeUndefined()
+    expect(mockTweet).toHaveBeenCalledTimes(failedPublication + 2)
+  })
+
   it('stores history before a Twitter publication failure', async () => {
     const { directory, database } = createTemporaryDatabasePath()
 

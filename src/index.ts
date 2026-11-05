@@ -130,8 +130,21 @@ export const processRates = async () => {
         process.env.NODE_ENV === 'production'
 
       if (shouldPublish) {
-        await sendTweet(tweetKK)
-        await sendTweet(tweetRU)
+        try {
+          await sendTweet(tweetKK)
+          await sendTweet(tweetRU)
+        } catch (error) {
+          if (
+            typeof error === 'object' && error !== null &&
+            'code' in error && error.code === 402
+          ) {
+            console.warn(
+              'X API returned 402 Payment Required; publication stopped. Check API credits. The next scheduled run will retry.'
+            )
+          } else {
+            throw error
+          }
+        }
       } else if (process.env.NODE_ENV !== 'test') {
         console.log('🚀 ~ tweetKK, tweetRU', { tweetKK, tweetRU })
       }
