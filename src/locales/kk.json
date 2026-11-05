@@ -1,7 +1,7 @@
 {
   "text": {
-    "up": "Қазіргі таңда доллар құны {RATE_USD} ₸ ({RATE_CHANGE_USD}), Евро құны {RATE_EUR} ₸ ({RATE_CHANGE_EUR}) және Ресей рубль құны {RATE_RUB} ₸ ({RATE_CHANGE_RUB}). Курс өсуде!",
-    "down": "Қазіргі таңда доллар құны {RATE_USD} ₸ ({RATE_CHANGE_USD}), Евро құны {RATE_EUR} ₸ ({RATE_CHANGE_EUR}) және Ресей рубль құны {RATE_RUB} ₸ ({RATE_CHANGE_RUB}). Курс төмендеуде!",
-    "no_change": "Қазіргі таңда доллар құны {RATE_USD} ₸, Евро құны {RATE_EUR} ₸ және Ресей рубль құны {RATE_RUB} ₸. Курс тұрақты."
+    "up": "Бүгінгі бағам:\n\nАҚШ доллары — {RATE_USD} ₸ ({SIGNED_CHANGE_USD}) {DIRECTION_USD}\nЕуро — {RATE_EUR} ₸ ({SIGNED_CHANGE_EUR}) {DIRECTION_EUR}\nРесей рублі — {RATE_RUB} ₸ ({SIGNED_CHANGE_RUB}) {DIRECTION_RUB}\nҚытай юані — {RATE_CNY} ₸ ({SIGNED_CHANGE_CNY}) {DIRECTION_CNY}\n\nБағам өсіп жатыр!",
+    "down": "Бүгінгі бағам:\n\nАҚШ доллары — {RATE_USD} ₸ ({SIGNED_CHANGE_USD}) {DIRECTION_USD}\nЕуро — {RATE_EUR} ₸ ({SIGNED_CHANGE_EUR}) {DIRECTION_EUR}\nРесей рублі — {RATE_RUB} ₸ ({SIGNED_CHANGE_RUB}) {DIRECTION_RUB}\nҚытай юані — {RATE_CNY} ₸ ({SIGNED_CHANGE_CNY}) {DIRECTION_CNY}\n\nБағам төмендеп жатыр!",
+    "no_change": "Бүгінгі бағам:\n\nАҚШ доллары — {RATE_USD} ₸ {DIRECTION_USD}\nЕуро — {RATE_EUR} ₸ {DIRECTION_EUR}\nРесей рублі — {RATE_RUB} ₸ {DIRECTION_RUB}\nҚытай юані — {RATE_CNY} ₸ {DIRECTION_CNY}\n\nБағам тұрақты."
   }
 }

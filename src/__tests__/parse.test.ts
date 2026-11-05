@@ -139,6 +139,15 @@ describe('parse.ts', () => {
           link: 'http://example.com'
         },
         {
+          title: 'CNY',
+          description: '62.00',
+          change: '0.2',
+          pubDate: '2024-03-26',
+          quant: '1',
+          index: 'CNY',
+          link: 'http://example.com'
+        },
+        {
           title: 'GBP',
           description: '550.00',
           change: '1.0',
@@ -150,8 +159,8 @@ describe('parse.ts', () => {
       ]
 
       const result = getMonitoredRates(mockRates)
-      expect(result).toHaveLength(3)
-      expect(result.map(rate => rate.title)).toEqual(['USD', 'EUR', 'RUB'])
+      expect(result).toHaveLength(4)
+      expect(result.map(rate => rate.title)).toEqual(['USD', 'EUR', 'RUB', 'CNY'])
     })
 
     it('should handle empty rates array', () => {

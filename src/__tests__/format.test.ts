@@ -12,7 +12,8 @@ describe('formatText', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: '1.5' },
       EUR: { amount: '480', change: '-2.25' },
-      RUB: { amount: '5', change: '0.01' }
+      RUB: { amount: '5', change: '0.01' },
+      CNY: { amount: '62', change: '0' }
     }
 
     const result = formatText(mockText, currenciesMap)
@@ -23,7 +24,8 @@ describe('formatText', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: '-1.5' },
       EUR: { amount: '480', change: '-2.0' },
-      RUB: { amount: '5', change: '0' }
+      RUB: { amount: '5', change: '0' },
+      CNY: { amount: '62', change: '0' }
     }
 
     const downwardResult = formatText(mockText, currenciesMap)
@@ -36,7 +38,8 @@ describe('formatText', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: '0' },
       EUR: { amount: '480', change: '0' },
-      RUB: { amount: '5', change: '0' }
+      RUB: { amount: '5', change: '0' },
+      CNY: { amount: '62', change: '0' }
     }
 
     const noChangeResult = formatText(mockText, currenciesMap)
@@ -47,7 +50,8 @@ describe('formatText', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: 'invalid' },
       EUR: { amount: '480', change: '0' },
-      RUB: { amount: '5', change: '0' }
+      RUB: { amount: '5', change: '0' },
+      CNY: { amount: '62', change: '0' }
     }
 
     const invalidChangeResult = formatText(mockText, currenciesMap)
@@ -63,7 +67,8 @@ describe('formatText', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: `0.${'0'.repeat(323)}1` },
       EUR: { amount: '480', change: '0' },
-      RUB: { amount: '5', change: '0' }
+      RUB: { amount: '5', change: '0' },
+      CNY: { amount: '62', change: '0' }
     }
 
     expect(formatText(directionText, currenciesMap)).toBe('up')
@@ -73,7 +78,8 @@ describe('formatText', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: '1.5' },
       EUR: { amount: '480', change: '-2.0' },
-      RUB: { amount: '5', change: '0' }
+      RUB: { amount: '5', change: '0' },
+      CNY: { amount: '62', change: '0' }
     }
 
     const usdPrimaryResult = formatText(mockText, currenciesMap)
@@ -86,7 +92,8 @@ describe('formatText', () => {
     const currenciesMap: CurrenciesMap = {
       USD: { amount: '450', change: '0' },
       EUR: { amount: '480', change: '2.0' },
-      RUB: { amount: '5', change: '0' }
+      RUB: { amount: '5', change: '0' },
+      CNY: { amount: '62', change: '0' }
     }
 
     const nonUsdFallbackResult = formatText(mockText, currenciesMap)
@@ -94,4 +101,19 @@ describe('formatText', () => {
       'USD: 450 (0), EUR: 480 (+2), RUB: 5 (0)'
     )
   })
+})
+
+it.each(['ru', 'kk'])('formats each currency and direction in %s', (lang) => {
+  const rates: CurrenciesMap = {
+    USD: { amount: '450', change: '1.5' },
+    EUR: { amount: '480', change: '-2.25' },
+    RUB: { amount: '5', change: '0' },
+    CNY: { amount: '62.34', change: '0.01' }
+  }
+  const text = formatText(require(`../locales/${lang}.json`).text, rates)
+  expect(text).toContain('450 ₸ (+1.5) ↑')
+  expect(text).toContain('480 ₸ (-2.25) ↓')
+  expect(text).toContain('5 ₸ (0) –')
+  expect(text).toContain('62.34 ₸ (+0.01) ↑')
+  expect(text.split('\n')).toHaveLength(8)
 })

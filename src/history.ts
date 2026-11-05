@@ -4,13 +4,13 @@ import { DatabaseSync } from 'node:sqlite'
 
 import { CurrencyCode, RateSnapshot, StoredRate } from './types'
 
-const CURRENCIES: CurrencyCode[] = ['USD', 'EUR', 'RUB']
+const CURRENCIES: CurrencyCode[] = ['USD', 'EUR', 'RUB', 'CNY']
 
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS rate_history (
     rate_date TEXT NOT NULL,
     currency TEXT NOT NULL
-      CHECK (currency IN ('USD', 'EUR', 'RUB')),
+      CHECK (currency IN ('USD', 'EUR', 'RUB', 'CNY')),
     amount TEXT NOT NULL,
     rss_change TEXT NOT NULL,
     fetched_at TEXT NOT NULL,
@@ -31,7 +31,24 @@ export class RateHistory {
     }
     const database = new DatabaseSync(path)
     try {
-      database.exec(SCHEMA)
+      const existing = database.prepare(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'rate_history'"
+      ).get() as { sql: string } | undefined
+      if (existing && !existing.sql.includes("'CNY'")) {
+        database.exec('BEGIN IMMEDIATE')
+        try {
+          database.exec('ALTER TABLE rate_history RENAME TO rate_history_legacy')
+          database.exec(SCHEMA)
+          database.exec('INSERT INTO rate_history SELECT * FROM rate_history_legacy')
+          database.exec('DROP TABLE rate_history_legacy')
+          database.exec('COMMIT')
+        } catch (error) {
+          database.exec('ROLLBACK')
+          throw error
+        }
+      } else {
+        database.exec(SCHEMA)
+      }
     } catch (error) {
       database.close()
       throw error
@@ -46,7 +63,7 @@ export class RateHistory {
         FROM rate_history
         WHERE rate_date < ?
         GROUP BY rate_date
-        HAVING COUNT(*) = 3
+        HAVING COUNT(CASE WHEN currency IN ('USD', 'EUR', 'RUB') THEN 1 END) = 3
         ORDER BY rate_date DESC
         LIMIT 1
       `)
@@ -80,13 +97,13 @@ export class RateHistory {
       }
     }
 
-    if (CURRENCIES.some(currency => !rates[currency])) {
+    if (['USD', 'EUR', 'RUB'].some(currency => !rates[currency as CurrencyCode])) {
       throw new Error(`Incomplete stored snapshot: ${dateRow.rate_date}`)
     }
 
     return {
       rateDate: dateRow.rate_date,
-      rates: rates as Record<CurrencyCode, StoredRate>
+      rates: rates as RateSnapshot['rates']
     }
   }
 
@@ -106,6 +123,7 @@ export class RateHistory {
     try {
       for (const currency of CURRENCIES) {
         const rate = snapshot.rates[currency]
+        if (!rate) continue
         statement.run(
           snapshot.rateDate,
           currency,

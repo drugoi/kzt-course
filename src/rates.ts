@@ -8,7 +8,7 @@ import {
   StoredRate
 } from './types'
 
-const CURRENCIES: CurrencyCode[] = ['USD', 'EUR', 'RUB']
+const CURRENCIES: CurrencyCode[] = ['USD', 'EUR', 'RUB', 'CNY']
 const RSS_DATE_PATTERN = /^(\d{2})\.(\d{2})\.(\d{4})$/
 
 const normalizeRateDate = (value: string): string => {
@@ -76,13 +76,13 @@ export const createCurrenciesMap = (
     CURRENCIES.map(currency => [
       currency,
       {
-        amount: current.rates[currency].amount,
-        change: previous
+        amount: current.rates[currency]!.amount,
+        change: previous?.rates[currency]
           ? subtractDecimals(
-            current.rates[currency].amount,
-            previous.rates[currency].amount
+            current.rates[currency]!.amount,
+            previous.rates[currency]!.amount
           )
-          : current.rates[currency].rssChange
+          : current.rates[currency]!.rssChange
       }
     ])
   ) as CurrenciesMap
@@ -92,7 +92,7 @@ export const findChangeMismatches = (
   calculated: CurrenciesMap
 ): ChangeMismatch[] =>
   CURRENCIES.flatMap(currency => {
-    const rss = normalizeDecimal(current.rates[currency].rssChange)
+    const rss = normalizeDecimal(current.rates[currency]!.rssChange)
     const value = normalizeDecimal(calculated[currency].change)
     return rss === value ? [] : [{ currency, calculated: value, rss }]
   })

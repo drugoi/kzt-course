@@ -22,7 +22,8 @@ const rate = (
 const mockRates: Rates = [
   rate('USD', '473.4', '-2.67'),
   rate('EUR', '539.39', '-2.47'),
-  rate('RUB', '6.07', '-0.01')
+  rate('RUB', '6.07', '-0.01'),
+  rate('CNY', '62.34', '0.02')
 ]
 
 const currentSnapshot: RateSnapshot = {
@@ -30,7 +31,8 @@ const currentSnapshot: RateSnapshot = {
   rates: {
     USD: { amount: '450.00', rssChange: '+1.50' },
     EUR: { amount: '480.00', rssChange: '-2.25' },
-    RUB: { amount: '5.00', rssChange: '-0.10' }
+    RUB: { amount: '5.00', rssChange: '-0.10' },
+    CNY: { amount: '62.34', rssChange: '0.02' }
   }
 }
 
@@ -49,13 +51,15 @@ it('creates a complete ISO-dated snapshot', () => {
     rates: {
       USD: { amount: '473.4', rssChange: '-2.67' },
       EUR: { amount: '539.39', rssChange: '-2.47' },
-      RUB: { amount: '6.07', rssChange: '-0.01' }
+      RUB: { amount: '6.07', rssChange: '-0.01' },
+      CNY: { amount: '62.34', rssChange: '0.02' }
     }
   })
 })
 
 it.each([
   ['missing currency', mockRates.slice(0, 2)],
+  ['missing yuan', mockRates.filter(rate => rate.title !== 'CNY')],
   ['missing change', mockRates.map(rate =>
     rate.title === 'USD' ? { ...rate, change: '' } : rate
   )],
@@ -70,7 +74,8 @@ it('calculates changes against a previous snapshot', () => {
   expect(createCurrenciesMap(currentSnapshot, previousSnapshot)).toEqual({
     USD: { amount: '450.00', change: '1.5' },
     EUR: { amount: '480.00', change: '-2.25' },
-    RUB: { amount: '5.00', change: '-0.1' }
+    RUB: { amount: '5.00', change: '-0.1' },
+    CNY: { amount: '62.34', change: '0.02' }
   })
 })
 
@@ -78,6 +83,17 @@ it('uses RSS changes when there is no previous snapshot', () => {
   expect(createCurrenciesMap(currentSnapshot, null)).toEqual({
     USD: { amount: '450.00', change: '+1.50' },
     EUR: { amount: '480.00', change: '-2.25' },
-    RUB: { amount: '5.00', change: '-0.10' }
+    RUB: { amount: '5.00', change: '-0.10' },
+    CNY: { amount: '62.34', change: '0.02' }
+  })
+})
+
+it('calculates yuan changes when a previous yuan rate is available', () => {
+  const previous = {
+    ...previousSnapshot,
+    rates: { ...previousSnapshot.rates, CNY: { amount: '62.30', rssChange: '0' } }
+  }
+  expect(createCurrenciesMap(currentSnapshot, previous).CNY).toEqual({
+    amount: '62.34', change: '0.04'
   })
 })

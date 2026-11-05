@@ -59,7 +59,8 @@ const currentSnapshot: RateSnapshot = {
   rates: {
     USD: { amount: '450.00', rssChange: '9' },
     EUR: { amount: '480.00', rssChange: '9' },
-    RUB: { amount: '5.00', rssChange: '9' }
+    RUB: { amount: '5.00', rssChange: '9' },
+    CNY: { amount: '62.00', rssChange: '9' }
   }
 }
 
@@ -90,7 +91,8 @@ const currentRates: Rates = [
     index: 'DOWN',
     change: '9',
     link: ''
-  }
+  },
+  { title: 'CNY', pubDate: '28.07.2026', description: '62.00', quant: '1', index: 'UP', change: '9', link: '' }
 ]
 
 const loadModules = async (env: TestEnv = {}) => {
@@ -191,7 +193,8 @@ describe('Integration Tests', () => {
       expect(formatText).toHaveBeenCalledWith(expect.anything(), {
         USD: { amount: '450.00', change: '9' },
         EUR: { amount: '480.00', change: '9' },
-        RUB: { amount: '5.00', change: '9' }
+        RUB: { amount: '5.00', change: '9' },
+        CNY: { amount: '62.00', change: '9' }
       })
 
       const history = new RateHistory(database)
@@ -231,7 +234,8 @@ describe('Integration Tests', () => {
       expect(formatText).toHaveBeenCalledWith(expect.anything(), {
         USD: { amount: '450.00', change: '1.5' },
         EUR: { amount: '480.00', change: '-2.25' },
-        RUB: { amount: '5.00', change: '-0.1' }
+        RUB: { amount: '5.00', change: '-0.1' },
+        CNY: { amount: '62.00', change: '9' }
       })
       expect(console.warn).toHaveBeenCalledTimes(3)
       expect(console.warn).toHaveBeenNthCalledWith(
@@ -294,7 +298,8 @@ describe('Integration Tests', () => {
       expect(formatText).toHaveBeenCalledWith(expect.anything(), {
         USD: { amount: '450.00', change: '1.5' },
         EUR: { amount: '480.00', change: '-2.25' },
-        RUB: { amount: '5.00', change: '-0.1' }
+        RUB: { amount: '5.00', change: '-0.1' },
+        CNY: { amount: '62.00', change: '9' }
       })
     } finally {
       rmSync(directory, { recursive: true, force: true })
@@ -533,7 +538,7 @@ describe('Integration Tests', () => {
     parseXml.mockResolvedValue(currentRates)
     getMonitoredRates.mockReturnValue(currentRates)
     formatText.mockImplementation((text: LocaleText['text']) => {
-      if (text.up.includes('Курс өсуде!')) {
+      if (text.up.includes('Бағам өсіп жатыр!')) {
         return 'Қазақша форматталған твит'
       }
       if (text.up.includes('Курс растет!')) {

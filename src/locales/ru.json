@@ -1,7 +1,7 @@
 {
   "text": {
-    "up": "Сегодня моя цена {RATE_USD} ₸ ({RATE_CHANGE_USD}) за Доллар США, {RATE_EUR} ₸ ({RATE_CHANGE_EUR}) за Евро и {RATE_RUB} ₸ ({RATE_CHANGE_RUB}) за российский рубль. Курс растет!",
-    "down": "Сегодня моя цена {RATE_USD} ₸ ({RATE_CHANGE_USD}) за Доллар США, {RATE_EUR} ₸ ({RATE_CHANGE_EUR}) за Евро и {RATE_RUB} ₸ ({RATE_CHANGE_RUB}) за российский рубль. Курс падает!",
-    "no_change": "Сегодня моя цена {RATE_USD} ₸ за Доллар США, {RATE_EUR} ₸ за Евро и {RATE_RUB} ₸ за российский рубль. Курс стабилен."
+    "up": "Сегодняшний курс:\n\nДоллар США — {RATE_USD} ₸ ({SIGNED_CHANGE_USD}) {DIRECTION_USD}\nЕвро — {RATE_EUR} ₸ ({SIGNED_CHANGE_EUR}) {DIRECTION_EUR}\nРоссийский рубль — {RATE_RUB} ₸ ({SIGNED_CHANGE_RUB}) {DIRECTION_RUB}\nКитайский юань — {RATE_CNY} ₸ ({SIGNED_CHANGE_CNY}) {DIRECTION_CNY}\n\nКурс растет!",
+    "down": "Сегодняшний курс:\n\nДоллар США — {RATE_USD} ₸ ({SIGNED_CHANGE_USD}) {DIRECTION_USD}\nЕвро — {RATE_EUR} ₸ ({SIGNED_CHANGE_EUR}) {DIRECTION_EUR}\nРоссийский рубль — {RATE_RUB} ₸ ({SIGNED_CHANGE_RUB}) {DIRECTION_RUB}\nКитайский юань — {RATE_CNY} ₸ ({SIGNED_CHANGE_CNY}) {DIRECTION_CNY}\n\nКурс падает!",
+    "no_change": "Сегодняшний курс:\n\nДоллар США — {RATE_USD} ₸ {DIRECTION_USD}\nЕвро — {RATE_EUR} ₸ {DIRECTION_EUR}\nРоссийский рубль — {RATE_RUB} ₸ {DIRECTION_RUB}\nКитайский юань — {RATE_CNY} ₸ {DIRECTION_CNY}\n\nКурс стабилен."
   }
 }

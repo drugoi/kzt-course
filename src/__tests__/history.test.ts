@@ -143,3 +143,37 @@ describe('RateHistory transaction boundaries', () => {
     }
   })
 })
+
+it('migrates an existing three-currency database and preserves its history', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'kzt-migration-'))
+  const path = join(directory, 'rates.sqlite')
+  try {
+    const old = new DatabaseSync(path)
+    old.exec(`
+      CREATE TABLE rate_history (
+        rate_date TEXT NOT NULL, currency TEXT NOT NULL CHECK (currency IN ('USD', 'EUR', 'RUB')),
+        amount TEXT NOT NULL, rss_change TEXT NOT NULL, fetched_at TEXT NOT NULL,
+        PRIMARY KEY (rate_date, currency)
+      ) STRICT;
+      INSERT INTO rate_history VALUES
+        ('2026-07-27', 'USD', '448.50', '-1', '2026-07-27'),
+        ('2026-07-27', 'EUR', '482.25', '-1', '2026-07-27'),
+        ('2026-07-27', 'RUB', '5.10', '-1', '2026-07-27');
+    `)
+    old.close()
+    const history = new RateHistory(path)
+    expect(history.findPreviousSnapshot('2026-07-28')).toEqual(snapshot20260727)
+    history.saveSnapshot({
+      ...snapshot20260728,
+      rates: { ...snapshot20260728.rates, CNY: { amount: '62.34', rssChange: '0.2' } }
+    } as RateSnapshot)
+    history.close()
+    const reopened = new RateHistory(path)
+    expect(reopened.findPreviousSnapshot('2026-07-29')?.rates).toMatchObject({
+      CNY: { amount: '62.34', rssChange: '0.2' }
+    })
+    reopened.close()
+  } finally {
+    rmSync(directory, { recursive: true, force: true })
+  }
+})

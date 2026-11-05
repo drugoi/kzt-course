@@ -3,7 +3,7 @@ interface Currency {
   change: string
 }
 
-export type CurrencyCode = 'USD' | 'EUR' | 'RUB'
+export type CurrencyCode = 'USD' | 'EUR' | 'RUB' | 'CNY'
 
 export type CurrenciesMap = Record<CurrencyCode, Currency>
 
@@ -26,7 +26,7 @@ export interface StoredRate {
 
 export interface RateSnapshot {
   rateDate: string
-  rates: Record<CurrencyCode, StoredRate>
+  rates: Record<Exclude<CurrencyCode, 'CNY'>, StoredRate> & Partial<Pick<Record<CurrencyCode, StoredRate>, 'CNY'>>
 }
 
 export interface ChangeMismatch {
